@@ -1,0 +1,153 @@
+package exam_management_syatem.service;
+
+import exam_management_syatem.dao.StudentDAO;
+import exam_management_syatem.dao.UserDAO;
+import exam_management_syatem.db.DatabaseManager;
+import exam_management_syatem.model.Student;
+import exam_management_syatem.model.User;
+import exam_management_syatem.security.PasswordHasher;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+public class StudentService {
+    private final StudentDAO studentDAO;
+    private final UserDAO userDAO;
+
+    public StudentService() {
+        this.studentDAO = new StudentDAO();
+        this.userDAO = new UserDAO();
+    }
+
+    public static class RegistrationResult {
+        public final int studentId;
+        public final String username;
+        public final String password;
+
+        public RegistrationResult(int studentId, String username, String password) {
+            this.studentId = studentId;
+            this.username = username;
+            this.password = password;
+        }
+    }
+
+    public RegistrationResult registerStudent(String name, String mobile, String email, String aadharNo, String dateOfBirth) throws Exception {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Student name is required.");
+        }
+        if (mobile == null || !mobile.matches("\\d{10}")) {
+            throw new IllegalArgumentException("Valid 10-digit mobile number is required.");
+        }
+        if (aadharNo == null || !aadharNo.matches("\\d{12}")) {
+            throw new IllegalArgumentException("Valid 12-digit Aadhar number is required.");
+        }
+        if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("Valid email address is required.");
+        }
+        if (dateOfBirth == null || !dateOfBirth.matches("\\d{8}")) {
+            throw new IllegalArgumentException("Valid 8-digit DOB (DDMMYYYY) is required.");
+        }
+
+        if (studentDAO.findByAadhar(aadharNo.trim()) != null) {
+            throw new IllegalArgumentException("A student with Aadhar number " + aadharNo + " is already registered.");
+        }
+
+        // Auto-generate username: first 4 chars of name + last 4 of Aadhar
+        String cleanName = name.trim().replaceAll("\\s+", "");
+        if (cleanName.length() < 4) {
+            cleanName = (cleanName + "aaaa").substring(0, 4);
+        } else {
+            cleanName = cleanName.substring(0, 4);
+        }
+        String last4Aadhar = aadharNo.trim().substring(aadharNo.trim().length() - 4);
+        String username = (cleanName + last4Aadhar).toLowerCase();
+
+        // Initial password equals username
+        String password = username;
+        String passwordHash = PasswordHasher.hashPassword(password);
+
+        Student s = new Student();
+        s.setName(name.trim());
+        s.setMobile(mobile.trim());
+        s.setEmail(email.trim());
+        s.setAadharNo(aadharNo.trim());
+        s.setDateOfBirth(dateOfBirth.trim());
+
+        Connection conn = null;
+        try {
+            conn = DatabaseManager.getConnection();
+            conn.setAutoCommit(false); // Begin Transaction
+
+            int studentId = studentDAO.insert(s, conn);
+
+            User u = new User();
+            u.setUsername(username);
+            u.setPasswordHash(passwordHash);
+            u.setRole("STUDENT");
+            u.setStudentId(studentId);
+            u.setActive(true);
+
+            userDAO.insert(u, conn);
+
+            conn.commit(); // Commit Transaction
+            return new RegistrationResult(studentId, username, password);
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
+            throw new Exception("Student registration failed: " + e.getMessage(), e);
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
+            }
+        }
+    }
+
+    public List<Student> getAllStudents() throws SQLException {
+        return studentDAO.listAll();
+    }
+
+    public Student getStudentById(int id) throws SQLException {
+        return studentDAO.findById(id);
+    }
+
+    public List<Student> searchStudents(String keyword) throws SQLException {
+        return studentDAO.search(keyword);
+    }
+
+    public void updateStudent(Student s) throws Exception {
+        if (s == null || s.getId() <= 0) {
+            throw new IllegalArgumentException("Invalid student.");
+        }
+        if (s.getName() == null || s.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Student name is required.");
+        }
+        if (s.getMobile() == null || !s.getMobile().matches("\\d{10}")) {
+            throw new IllegalArgumentException("Valid 10-digit mobile number is required.");
+        }
+        if (s.getAadharNo() == null || !s.getAadharNo().matches("\\d{12}")) {
+            throw new IllegalArgumentException("Valid 12-digit Aadhar number is required.");
+        }
+        if (s.getEmail() == null || !s.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new IllegalArgumentException("Valid email address is required.");
+        }
+        if (s.getDateOfBirth() == null || !s.getDateOfBirth().matches("\\d{8}")) {
+            throw new IllegalArgumentException("Valid 8-digit DOB (DDMMYYYY) is required.");
+        }
+
+        Student existing = studentDAO.findByAadhar(s.getAadharNo().trim());
+        if (existing != null && existing.getId() != s.getId()) {
+            throw new IllegalArgumentException("Another student with Aadhar " + s.getAadharNo() + " already exists.");
+        }
+
+        studentDAO.update(s);
+    }
+
+    public void setStudentActiveStatus(int studentId, boolean active) throws Exception {
+        studentDAO.setActive(studentId, active);
+        userDAO.setActiveByStudentId(studentId, active);
+    }
+}
+
+

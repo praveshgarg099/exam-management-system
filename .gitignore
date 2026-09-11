@@ -1,0 +1,14 @@
+# Compiled class files
+bin/
+*.class
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE metadata
+.metadata/
+
+# Legacy empty database
+subject1.sqlite
