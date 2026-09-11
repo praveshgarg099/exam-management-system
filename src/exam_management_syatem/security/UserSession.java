@@ -29,11 +29,52 @@ public class UserSession {
         return studentId;
     }
 
+    public boolean isAuthenticated() {
+        return userId > 0 && role != null && !role.trim().isEmpty();
+    }
+
     public boolean isAdmin() {
-        return "ADMIN".equalsIgnoreCase(role);
+        return isAuthenticated() && "ADMIN".equalsIgnoreCase(role);
     }
 
     public boolean isStudent() {
-        return "STUDENT".equalsIgnoreCase(role);
+        return isAuthenticated() && "STUDENT".equalsIgnoreCase(role) && studentId != null && studentId > 0;
+    }
+
+    public void requireAuthenticated() {
+        if (!isAuthenticated()) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+    }
+
+    public void requireAdmin() {
+        requireAuthenticated();
+        if (!isAdmin()) {
+            throw new SecurityException("Access Denied: Administrator role required.");
+        }
+    }
+
+    public void requireStudent() {
+        requireAuthenticated();
+        if (!isStudent()) {
+            throw new SecurityException("Access Denied: Student role required.");
+        }
+    }
+
+    public boolean canAccessStudent(int targetStudentId) {
+        if (!isAuthenticated()) {
+            return false;
+        }
+        if (isAdmin()) {
+            return true;
+        }
+        return isStudent() && studentId != null && studentId == targetStudentId;
+    }
+
+    public void requireStudentAccess(int targetStudentId) {
+        requireAuthenticated();
+        if (!canAccessStudent(targetStudentId)) {
+            throw new SecurityException("Access Denied: Cannot access data for student ID " + targetStudentId + " with caller student ID " + studentId);
+        }
     }
 }

@@ -34,9 +34,27 @@ public class ExamScheduleDAO {
     }
 
     public ExamSchedule findById(int id) throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            return findById(id, conn);
+        }
+    }
+
+    public ExamSchedule findById(int id, Connection conn) throws SQLException {
         String sql = "SELECT id, student_id, subject_id, duration_minutes, total_questions, passing_percentage, status, created_at FROM exam_schedules WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public ExamSchedule findByIdForUpdate(int id, Connection conn) throws SQLException {
+        String sql = "SELECT id, student_id, subject_id, duration_minutes, total_questions, passing_percentage, status, created_at FROM exam_schedules WHERE id = ? FOR UPDATE";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
@@ -118,9 +136,14 @@ public class ExamScheduleDAO {
     }
 
     public void updateStatus(int scheduleId, String status) throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            updateStatus(scheduleId, status, conn);
+        }
+    }
+
+    public void updateStatus(int scheduleId, String status, Connection conn) throws SQLException {
         String sql = "UPDATE exam_schedules SET status = ? WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, status);
             pstmt.setInt(2, scheduleId);
             pstmt.executeUpdate();

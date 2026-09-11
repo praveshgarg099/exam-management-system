@@ -62,7 +62,7 @@ public class DataMigrator {
     public static MigrationAudit migrateAll(String baseDbDir) {
         MigrationAudit audit = new MigrationAudit();
         try {
-            // Ensure SQLite database schema exists
+            // Ensure database schema exists
             DatabaseManager.initializeDatabase();
 
             // Load UCanAccess driver
@@ -98,27 +98,30 @@ public class DataMigrator {
     }
 
     private static Connection getAccessConnection(String dbPath) throws SQLException {
-        File file = new File(dbPath);
-        if (!file.exists()) {
-            throw new SQLException("Access DB file does not exist: " + dbPath);
-        }
-        return DriverManager.getConnection("jdbc:ucanaccess://" + file.getAbsolutePath());
+        String url = "jdbc:ucanaccess://" + dbPath + ";memory=false";
+        return DriverManager.getConnection(url);
     }
 
     private static void migrateStudents(String baseDbDir, MigrationAudit audit, Map<String, Integer> studentUsernameToIdMap, Map<String, Integer> studentNameToIdMap) {
         String dbPath = baseDbDir + File.separator + "studentdata.accdb";
+        File f = new File(dbPath);
+        if (!f.exists()) {
+            audit.errorLogs.add("Student DB not found: " + dbPath);
+            return;
+        }
+
         StudentDAO studentDAO = new StudentDAO();
         try (Connection accessConn = getAccessConnection(dbPath);
              Statement stmt = accessConn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM data")) {
+             ResultSet rs = stmt.executeQuery("SELECT * FROM studentdata")) {
 
             while (rs.next()) {
                 audit.studentsSourceCount++;
                 String name = rs.getString("Name");
-                String mob = rs.getString("Mobile_number");
-                String email = rs.getString("Email_Id");
-                String aadharno = rs.getString("Aadhar_no");
-                String dob = rs.getString("Date_Birth");
+                String mob = rs.getString("Mobileno");
+                String email = rs.getString("Emailid");
+                String aadharno = rs.getString("Aadharno");
+                String dob = rs.getString("Dateofbirth");
 
                 if (name == null || name.trim().isEmpty() || aadharno == null || aadharno.trim().isEmpty()) {
                     audit.studentsSkippedCount++;
@@ -126,7 +129,7 @@ public class DataMigrator {
                     continue;
                 }
 
-                // Check existing in SQLite
+                // Check existing in database
                 Student existing = studentDAO.findByAadhar(aadharno.trim());
                 int studentId;
                 if (existing == null) {
@@ -137,8 +140,8 @@ public class DataMigrator {
                     s.setAadharNo(aadharno.trim());
                     s.setDateOfBirth(dob != null ? dob.trim() : "");
 
-                    try (Connection sqliteConn = DatabaseManager.getConnection()) {
-                        studentId = studentDAO.insert(s, sqliteConn);
+                    try (Connection dbConn = DatabaseManager.getConnection()) {
+                        studentId = studentDAO.insert(s, dbConn);
                     }
                     audit.studentsMigratedCount++;
                 } else {
@@ -166,15 +169,21 @@ public class DataMigrator {
 
     private static void migrateUsers(String baseDbDir, MigrationAudit audit, Map<String, Integer> studentUsernameToIdMap) {
         String dbPath = baseDbDir + File.separator + "studentloginn.accdb";
+        File f = new File(dbPath);
+        if (!f.exists()) {
+            audit.errorLogs.add("User DB not found: " + dbPath);
+            return;
+        }
+
         UserDAO userDAO = new UserDAO();
         try (Connection accessConn = getAccessConnection(dbPath);
              Statement stmt = accessConn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM star")) {
+             ResultSet rs = stmt.executeQuery("SELECT * FROM studentlogin")) {
 
             while (rs.next()) {
                 audit.usersSourceCount++;
-                String username = rs.getString("username");
-                String password = rs.getString("password");
+                String username = rs.getString("Username");
+                String password = rs.getString("Password");
 
                 if (username == null || username.trim().isEmpty()) {
                     audit.usersSkippedCount++;
@@ -194,8 +203,8 @@ public class DataMigrator {
                     u.setStudentId(studentId);
                     u.setActive(true);
 
-                    try (Connection sqliteConn = DatabaseManager.getConnection()) {
-                        userDAO.insert(u, sqliteConn);
+                    try (Connection dbConn = DatabaseManager.getConnection()) {
+                        userDAO.insert(u, dbConn);
                     }
                     audit.usersMigratedCount++;
                 } else {

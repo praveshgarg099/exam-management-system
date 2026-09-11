@@ -25,7 +25,7 @@ public class QuestionDAO {
             pstmt.setString(6, q.getOption4());
             pstmt.setString(7, q.getCorrectAnswer());
             pstmt.setString(8, q.getDifficulty() != null ? q.getDifficulty() : "MEDIUM");
-            pstmt.setInt(9, q.isActive() ? 1 : 0);
+            pstmt.setBoolean(9, q.isActive());
             pstmt.executeUpdate();
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -47,7 +47,7 @@ public class QuestionDAO {
             pstmt.setString(5, q.getOption4());
             pstmt.setString(6, q.getCorrectAnswer());
             pstmt.setString(7, q.getDifficulty() != null ? q.getDifficulty() : "MEDIUM");
-            pstmt.setInt(8, q.isActive() ? 1 : 0);
+            pstmt.setBoolean(8, q.isActive());
             pstmt.setInt(9, q.getId());
             pstmt.executeUpdate();
         }
@@ -79,7 +79,7 @@ public class QuestionDAO {
 
     public List<Question> findActiveBySubjectId(int subjectId) throws SQLException {
         List<Question> list = new ArrayList<>();
-        String sql = "SELECT id, subject_id, question_text, option1, option2, option3, option4, correct_answer, difficulty, active, created_at, updated_at FROM questions WHERE subject_id = ? AND (active = 1 OR active IS NULL) ORDER BY id ASC";
+        String sql = "SELECT id, subject_id, question_text, option1, option2, option3, option4, correct_answer, difficulty, active, created_at, updated_at FROM questions WHERE subject_id = ? AND active = TRUE ORDER BY id ASC";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, subjectId);
@@ -123,7 +123,7 @@ public class QuestionDAO {
     }
 
     public int countActiveBySubjectId(int subjectId) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM questions WHERE subject_id = ? AND (active = 1 OR active IS NULL)";
+        String sql = "SELECT COUNT(*) FROM questions WHERE subject_id = ? AND active = TRUE";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, subjectId);
@@ -140,7 +140,7 @@ public class QuestionDAO {
         String sql = "UPDATE questions SET active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, active ? 1 : 0);
+            pstmt.setBoolean(1, active);
             pstmt.setInt(2, questionId);
             pstmt.executeUpdate();
         }
@@ -163,7 +163,7 @@ public class QuestionDAO {
             q.setDifficulty("MEDIUM");
         }
         try {
-            q.setActive(rs.getInt("active") == 1);
+            q.setActive(rs.getBoolean("active"));
         } catch (SQLException ignored) {
             q.setActive(true);
         }

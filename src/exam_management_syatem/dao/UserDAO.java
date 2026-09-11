@@ -23,7 +23,7 @@ public class UserDAO {
             } else {
                 pstmt.setNull(4, Types.INTEGER);
             }
-            pstmt.setInt(5, user.isActive() ? 1 : 0);
+            pstmt.setBoolean(5, user.isActive());
             pstmt.executeUpdate();
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -48,10 +48,29 @@ public class UserDAO {
         return null;
     }
 
-    public void updatePassword(int userId, String newPasswordHash) throws SQLException {
-        String sql = "UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    public User findById(int id) throws SQLException {
+        String sql = "SELECT id, username, password_hash, role, student_id, active, created_at, updated_at FROM users WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    public void updatePassword(int userId, String newPasswordHash) throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            updatePassword(userId, newPasswordHash, conn);
+        }
+    }
+
+    public void updatePassword(int userId, String newPasswordHash, Connection conn) throws SQLException {
+        String sql = "UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, newPasswordHash);
             pstmt.setInt(2, userId);
             pstmt.executeUpdate();
@@ -73,10 +92,15 @@ public class UserDAO {
     }
 
     public void setActiveByStudentId(int studentId, boolean active) throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            setActiveByStudentId(studentId, active, conn);
+        }
+    }
+
+    public void setActiveByStudentId(int studentId, boolean active, Connection conn) throws SQLException {
         String sql = "UPDATE users SET active = ?, updated_at = CURRENT_TIMESTAMP WHERE student_id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, active ? 1 : 0);
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setBoolean(1, active);
             pstmt.setInt(2, studentId);
             pstmt.executeUpdate();
         }
@@ -92,7 +116,7 @@ public class UserDAO {
         if (!rs.wasNull()) {
             u.setStudentId(studentId);
         }
-        u.setActive(rs.getInt("active") == 1);
+        u.setActive(rs.getBoolean("active"));
         u.setCreatedAt(rs.getTimestamp("created_at"));
         u.setUpdatedAt(rs.getTimestamp("updated_at"));
         return u;

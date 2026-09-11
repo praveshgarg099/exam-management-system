@@ -9,6 +9,7 @@ import exam_management_syatem.model.ExamResult;
 import exam_management_syatem.model.ExamSchedule;
 import exam_management_syatem.model.Student;
 import exam_management_syatem.model.Subject;
+import exam_management_syatem.security.UserSession;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -43,7 +44,12 @@ public class DashboardMetricsService {
         public double averageScorePercentage;
     }
 
-    public Metrics getMetrics() throws SQLException {
+    public Metrics getMetrics(UserSession session) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+
         Metrics m = new Metrics();
 
         List<Student> students = studentDAO.listAll();

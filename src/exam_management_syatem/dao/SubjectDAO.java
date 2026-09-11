@@ -18,7 +18,7 @@ public class SubjectDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, subject.getName());
-            pstmt.setInt(2, subject.isActive() ? 1 : 0);
+            pstmt.setBoolean(2, subject.isActive());
             pstmt.executeUpdate();
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -59,7 +59,7 @@ public class SubjectDAO {
 
     public List<Subject> listActive() throws SQLException {
         List<Subject> list = new ArrayList<>();
-        String sql = "SELECT id, name, active, created_at, updated_at FROM subjects WHERE active = 1 ORDER BY name ASC";
+        String sql = "SELECT id, name, active, created_at, updated_at FROM subjects WHERE active = TRUE ORDER BY name ASC";
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -97,7 +97,7 @@ public class SubjectDAO {
         String sql = "UPDATE subjects SET active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, active ? 1 : 0);
+            pstmt.setBoolean(1, active);
             pstmt.setInt(2, subjectId);
             pstmt.executeUpdate();
         }
@@ -107,7 +107,7 @@ public class SubjectDAO {
         Subject s = new Subject();
         s.setId(rs.getInt("id"));
         s.setName(rs.getString("name"));
-        s.setActive(rs.getInt("active") == 1);
+        s.setActive(rs.getBoolean("active"));
         s.setCreatedAt(rs.getTimestamp("created_at"));
         s.setUpdatedAt(rs.getTimestamp("updated_at"));
         return s;

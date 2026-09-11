@@ -21,7 +21,7 @@ public class StudentDAO {
             pstmt.setString(3, student.getEmail());
             pstmt.setString(4, student.getAadharNo());
             pstmt.setString(5, student.getDateOfBirth());
-            pstmt.setInt(6, student.isActive() ? 1 : 0);
+            pstmt.setBoolean(6, student.isActive());
             pstmt.executeUpdate();
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -33,9 +33,14 @@ public class StudentDAO {
     }
 
     public void update(Student student) throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            update(student, conn);
+        }
+    }
+
+    public void update(Student student, Connection conn) throws SQLException {
         String sql = "UPDATE students SET name = ?, mobile = ?, email = ?, aadhar_no = ?, date_of_birth = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, student.getName());
             pstmt.setString(2, student.getMobile());
             pstmt.setString(3, student.getEmail());
@@ -47,10 +52,15 @@ public class StudentDAO {
     }
 
     public void setActive(int studentId, boolean active) throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            setActive(studentId, active, conn);
+        }
+    }
+
+    public void setActive(int studentId, boolean active, Connection conn) throws SQLException {
         String sql = "UPDATE students SET active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setInt(1, active ? 1 : 0);
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setBoolean(1, active);
             pstmt.setInt(2, studentId);
             pstmt.executeUpdate();
         }
@@ -125,11 +135,7 @@ public class StudentDAO {
         s.setEmail(rs.getString("email"));
         s.setAadharNo(rs.getString("aadhar_no"));
         s.setDateOfBirth(rs.getString("date_of_birth"));
-        try {
-            s.setActive(rs.getInt("active") == 1);
-        } catch (SQLException ignored) {
-            s.setActive(true);
-        }
+        s.setActive(rs.getBoolean("active"));
         s.setCreatedAt(rs.getTimestamp("created_at"));
         s.setUpdatedAt(rs.getTimestamp("updated_at"));
         return s;

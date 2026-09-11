@@ -10,5 +10,7 @@ bin/
 # IDE metadata
 .metadata/
 
-# Legacy empty database
+# Legacy databases and local backups
 subject1.sqlite
+*.db
+backups/

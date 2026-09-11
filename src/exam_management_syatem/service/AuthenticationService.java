@@ -47,28 +47,42 @@ public class AuthenticationService {
         return new UserSession(user.getId(), user.getUsername(), user.getRole(), user.getStudentId());
     }
 
-    public void changeStudentPassword(int studentId, String currentPassword, String newPassword) throws Exception {
+    public void changeOwnPassword(UserSession session, String currentPassword, String newPassword) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAuthenticated();
+
         if (currentPassword == null || currentPassword.isEmpty()) {
             throw new IllegalArgumentException("Current password is required.");
         }
         if (newPassword == null || newPassword.length() < 6) {
             throw new IllegalArgumentException("New password must be at least 6 characters long.");
         }
-        User user = userDAO.findByStudentId(studentId);
+
+        User user = userDAO.findById(session.getUserId());
         if (user == null) {
-            throw new Exception("User account not found for student.");
+            throw new IllegalArgumentException("User account not found.");
         }
+
         if (!PasswordHasher.verifyPassword(currentPassword, user.getPasswordHash())) {
-            throw new Exception("Current password verification failed.");
+            throw new SecurityException("Current password verification failed.");
         }
+
         userDAO.updatePassword(user.getId(), PasswordHasher.hashPassword(newPassword));
     }
 
-    public String adminResetStudentPassword(int studentId) throws Exception {
+    public String adminResetStudentPassword(UserSession adminSession, int studentId) throws Exception {
+        if (adminSession == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        adminSession.requireAdmin();
+
         User user = userDAO.findByStudentId(studentId);
         if (user == null) {
-            throw new Exception("User account not found for student.");
+            throw new IllegalArgumentException("User account not found for student.");
         }
+
         // Generate random 8-character temporary password
         String chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
         SecureRandom random = new SecureRandom();
@@ -80,12 +94,5 @@ public class AuthenticationService {
 
         userDAO.updatePassword(user.getId(), PasswordHasher.hashPassword(tempPassword));
         return tempPassword;
-    }
-
-    public void changePassword(int userId, String oldPassword, String newPassword) throws Exception {
-        if (newPassword == null || newPassword.length() < 4) {
-            throw new IllegalArgumentException("New password must be at least 4 characters long.");
-        }
-        userDAO.updatePassword(userId, PasswordHasher.hashPassword(newPassword));
     }
 }

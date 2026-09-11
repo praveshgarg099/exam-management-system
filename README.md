@@ -1,92 +1,134 @@
 # Exam Management System (EMS)
 
-A comprehensive, desktop-based Exam Management System built with **Java 19** and **Swing UI**, powered by a unified **SQLite** relational database with a clean layered architecture (**UI $\rightarrow$ Service $\rightarrow$ DAO $\rightarrow$ Database**).
+A enterprise-grade, desktop-based Exam Management System built with **Java 19** and **Swing UI**, backed by a robust **PostgreSQL** relational database with a clean layered architecture (**UI $\rightarrow$ Service $\rightarrow$ DAO $\rightarrow$ PostgreSQL**).
+
+---
+
+## 🏛️ Project Architecture & Package Structure
+
+The codebase is organized into clean, dedicated packages with strict boundary separation:
+
+```text
+exam_management_syatem
+├── app
+│   └── Main.java                         # Application entrypoint (bootstrap, DB init, theme, LoginFrame)
+├── config
+│   └── DatabaseConfig.java               # PostgreSQL connection management & credentials
+├── security
+│   ├── PasswordHasher.java               # PBKDF2WithHmacSHA256 (65,536 iterations, cryptographic salt)
+│   └── UserSession.java                  # Thread-safe authenticated user context & role authorization
+├── model                                 # Domain models (Student, User, Subject, Question, ExamSchedule, etc.)
+├── dao                                   # Data Access Objects (parameterized PostgreSQL queries)
+├── service                               # Business logic & transaction enforcement
+├── util
+│   ├── ImageLoader.java                  # Centralized image loading with cached fallback icons
+│   └── ValidationUtils.java              # Field validation, regex checks, and safe conversions
+├── ui
+│   ├── design                            # Design system tokens, Theme colors, Typography, Icons
+│   ├── components                        # Reusable Swing widgets (Buttons, StatCards, StatusBadges, Inputs)
+│   ├── shell                             # Application frame (CardLayout, Sidebar, Topbar, ViewRegistry)
+│   ├── auth                              # Premium Login experience (LoginFrame)
+│   └── views
+│       ├── admin                         # Admin modern views (AdminDashboardView)
+│       ├── student                       # Student modern views (Dashboard, My Exams, Results, Profile)
+│       └── exam                          # Active examination engine views (testtake, last)
+├── legacy
+│   └── ui                                # Isolated legacy Swing screens (adminpage1, testmaker, etc.)
+├── tools
+│   └── DesignSystemPreview.java          # Interactive UI component & token gallery
+└── test                                  # Automated test suites for all subsystems & phases
+```
 
 ---
 
 ## 🚀 Key Features
 
 ### 👨‍🎓 Student Capabilities
-- **Dedicated Student Portal**: Directs students upon login to a central dashboard with personalized greeting, exam schedule, and result history.
-- **Available Exams & Direct Launch**: View scheduled exams with time limit and question count, and launch the test session with real-time countdown.
-- **Protected Exam-Taking Engine**:
-  - Live timer with non-negative protection and single-trigger auto-submission upon expiry.
-  - Real-time progress tracker (`Answered: X / Y`).
-  - Pre-submission confirmation summary (Total questions, Answered, Unanswered, Time remaining).
+- **Dedicated Student Portal**: Modern dashboard with greeting, metric cards, exam schedule preview, and recent results.
+- **My Exams & Direct Launch**: Real-time examination view with authoritative `ExamService.getExistingAttempt()` status checks.
+- **Protected Examination Engine**:
+  - Live timer with non-negative countdown and authoritative single-trigger submission.
+  - Real-time question navigation, progress tracker, and status summary.
   - Deterministic stable question shuffling per exam schedule.
+  - Terminal attempt protections (`COMPLETED` and `EXPIRED` attempts cannot be restarted or manipulated).
 - **Self-Service Security**: Students can update their password directly from their profile with current-password validation.
-- **Exam History & Performance**: Full breakdown of previous attempts, percentages, and pass/fail statuses.
+- **Results & Performance**: Full breakdown of past attempts, percentages, and pass/fail indicators.
 
 ### 🛡️ Admin Capabilities
-- **Real-Time KPI Dashboard**: Live metrics tracking Total/Active Students, Question Bank count, Overall Pass Rate, and Average Exam Score.
-- **Student Management**:
-  - Searchable student directory (Name, Email, Mobile, Aadhar).
-  - Student registration with auto-generated credentials.
-  - Profile editing with field validation.
-  - Soft-delete (Active/Inactive) toggle preventing deactivated students from logging in.
-  - Secure temporary password resets for students.
-- **Exam Schedule & Lifecycle Management**:
-  - Schedule exams with student selection, subject, duration, question count, and passing threshold.
-  - Question limit validation against the subject's active question bank.
-  - Lifecycle state machine: `SCHEDULED` $\rightarrow$ `IN_PROGRESS` $\rightarrow$ `COMPLETED` or `CANCELLED`.
-  - Edit or cancel schedules prior to exam start.
-- **Question Bank Management**:
-  - Add questions with 4 options, validated correct answer, and difficulty levels (`EASY`, `MEDIUM`, `HARD`).
-  - Search and filter questions by keyword and subject.
-  - Soft-delete toggle to deactivate questions without corrupting historical result records.
-- **Subject Management**:
-  - Add, rename, and toggle active status for subjects.
-  - Guard protection preventing subject deactivation if active scheduled exams are pending.
-- **Result & Analytics Management**:
-  - Filter results by Subject and Pass/Fail status with live search.
-  - Detailed attempt modal with scoring metrics and submission timestamps.
-  - Safe single-attempt result deletion.
+- **Real-Time Telemetry Dashboard**: Live metrics tracking Total/Active Students, Question Bank count, Schedules, Overall Pass Rate, and Average Exam Score.
+- **Student Management**: Directory search, registration with secure credential generation, soft-deletes, and profile editing.
+- **Exam Schedule Lifecycle**: Lifecycle state machine (`SCHEDULED` $\rightarrow$ `IN_PROGRESS` $\rightarrow$ `COMPLETED` / `CANCELLED`).
+- **Question Bank Management**: Multi-choice question creation with difficulty tagging, subject associations, and soft-delete protection.
+- **Subject Management**: Subject directory with guard protections preventing deactivation when pending schedules exist.
+- **Result & Analytics Management**: Filtered examination performance reports with detailed attempt modals.
 
 ---
 
-## 🏛️ Architecture & Security
+## 🔒 Security & Integrity Baseline
 
-- **Layered Pattern**: Complete separation of concerns:
-  - `exam_management_syatem.model`: Domain entity models (`Student`, `User`, `Subject`, `Question`, `ExamSchedule`, `ExamResult`).
-  - `exam_management_syatem.dao`: Data Access Object layer executing parameterized SQLite JDBC queries.
-  - `exam_management_syatem.service`: Business logic layer enforcing validation, transactions, and state transitions.
-  - `exam_management_syatem.security`: Secure password hashing using **PBKDF2WithHmacSHA256** (65,536 iterations, cryptographic salt) and thread-safe `UserSession`.
-  - Swing UI Components: Pure presentation consuming services.
-- **Database**: Single unified `exam_management.db` SQLite database with foreign key constraints, cascading rules, and check constraints.
+- **Password Hashing**: Strictly **PBKDF2WithHmacSHA256** with unique salts and constant-time comparisons. No BCrypt code or dependencies exist.
+- **Role Enforcement**: Every service method requires a valid `UserSession` and asserts role permissions (`requireAdmin()`, student identity match).
+- **Database Concurrency & Idempotency**: Strict PostgreSQL schema with foreign keys, checks, unique constraints, and transaction rollbacks.
+- **Attempt Invariant**: Exactly one attempt record per student per exam schedule across all attempt states.
 
 ---
 
 ## 🛠️ Tech Stack & Prerequisites
 
 - **Java Development Kit**: JDK 19+
-- **Database**: SQLite 3 (via `sqlite-jdbc-3.45.1.0`)
-- **GUI Toolkit**: Java Swing (AWT/Swing)
-- **Security**: Java Cryptography Architecture (PBKDF2 HMAC-SHA256)
+- **Database**: PostgreSQL 14+ / 18+ (running on `localhost:5432`, database `exam_management`)
+- **JDBC Driver**: `postgresql-42.7.2.jar` (in `Resource/`)
+- **GUI Toolkit**: Java Swing / AWT
 
 ---
 
 ## 📦 How to Compile & Run
 
-### 1. Compile
+### 1. Compile All Sources
+Using the comprehensive sources manifest:
 ```bash
-javac -cp "Resource/*:src" -d bin src/exam_management_syatem/*.java src/exam_management_syatem/*/*.java
+javac -cp "Resource/*:src" -d bin @sources.txt
 ```
 
-### 2. Run the Application
+### 2. Launch the Application
+Modern entrypoint:
 ```bash
-java -cp "bin:Resource/*" exam_management_syatem.index
+java -cp "bin:Resource/*" exam_management_syatem.app.Main
+```
+*(Legacy entrypoint `exam_management_syatem.index` is preserved as a backward-compatible delegating facade).*
+
+### 3. Launch Design System Preview
+```bash
+java -cp "bin:Resource/*" exam_management_syatem.tools.DesignSystemPreview
 ```
 
-### 3. Run Automated Tests
+### 4. Execute Automated Test Suites
+Run any of the 6 comprehensive test suites:
 ```bash
-java -cp "bin:Resource/*" exam_management_syatem.scratch.Phase3FullTestSuite
+# 1. PostgreSQL Migration & Integration (52 tests)
+java -cp "bin:Resource/*" exam_management_syatem.test.PostgreSQLMigrationVerification
+
+# 2. Phase 4A Security & Password Hardening (36 tests)
+java -cp "bin:Resource/*" exam_management_syatem.test.Phase4ASecurityTestSuite
+
+# 3. Phase 3 Product & Lifecycle Suite (43 tests)
+java -cp "bin:Resource/*" exam_management_syatem.test.Phase3FullTestSuite
+
+# 4. UI.3 Authentication Suite (15 tests)
+java -cp "bin:Resource/*" exam_management_syatem.test.UI3VerificationTest
+
+# 5. UI.4 Admin Dashboard Suite (22 tests)
+java -cp "bin:Resource/*" exam_management_syatem.test.UI4VerificationTest
+
+# 6. UI.5 Student Dashboard Suite (30 tests)
+java -cp "bin:Resource/*" exam_management_syatem.test.UI5VerificationTest
 ```
 
 ---
 
 ## 🔑 Default Credentials
 
-- **Admin Login**:
+- **Admin Account**:
   - **Username**: `superadmin`
   - **Password**: `123456`
-- **Student Login**: Use registered student credentials or create a new student via Admin $\rightarrow$ Students $\rightarrow$ Add Student.
+- **Student Account**: Register a new student via Admin $\rightarrow$ Student Directory, or use existing student credentials.

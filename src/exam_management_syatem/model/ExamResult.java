@@ -1,9 +1,11 @@
 package exam_management_syatem.model;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 
 public class ExamResult {
     private int id;
+    private Integer attemptId;
     private Integer examScheduleId;
     private int studentId;
     private int subjectId;
@@ -14,8 +16,8 @@ public class ExamResult {
     private double marks;
     private double percentage;
     private String result; // Pass or Fail
-    private Timestamp startedAt;
-    private Timestamp submittedAt;
+    private Instant startedAt;
+    private Instant submittedAt;
 
     public ExamResult() {}
 
@@ -33,6 +35,9 @@ public class ExamResult {
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
+
+    public Integer getAttemptId() { return attemptId; }
+    public void setAttemptId(Integer attemptId) { this.attemptId = attemptId; }
 
     public Integer getExamScheduleId() { return examScheduleId; }
     public void setExamScheduleId(Integer examScheduleId) { this.examScheduleId = examScheduleId; }
@@ -64,11 +69,12 @@ public class ExamResult {
     public String getResult() { return result; }
     public void setResult(String result) { this.result = result; }
 
-    public Timestamp getStartedAt() { return startedAt; }
-    public void setStartedAt(Timestamp startedAt) { this.startedAt = startedAt; }
+    public Instant getStartedAt() { return startedAt; }
+    public void setStartedAt(Instant startedAt) { this.startedAt = startedAt; }
+    public void setStartedAt(Timestamp startedAt) { this.startedAt = (startedAt != null) ? startedAt.toInstant() : null; }
 
-    public Timestamp getSubmittedAt() { return submittedAt; }
-    public void setSubmittedAt(Timestamp submittedAt) { this.submittedAt = submittedAt; }
-    public Timestamp getCreatedAt() { return submittedAt; }
+    public Instant getSubmittedAt() { return submittedAt; }
+    public void setSubmittedAt(Instant submittedAt) { this.submittedAt = submittedAt; }
+    public void setSubmittedAt(Timestamp submittedAt) { this.submittedAt = (submittedAt != null) ? submittedAt.toInstant() : null; }
+    public Instant getCreatedAt() { return submittedAt; }
 }
-

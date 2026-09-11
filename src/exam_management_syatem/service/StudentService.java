@@ -6,6 +6,7 @@ import exam_management_syatem.db.DatabaseManager;
 import exam_management_syatem.model.Student;
 import exam_management_syatem.model.User;
 import exam_management_syatem.security.PasswordHasher;
+import exam_management_syatem.security.UserSession;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -32,7 +33,12 @@ public class StudentService {
         }
     }
 
-    public RegistrationResult registerStudent(String name, String mobile, String email, String aadharNo, String dateOfBirth) throws Exception {
+    public RegistrationResult registerStudent(UserSession session, String name, String mobile, String email, String aadharNo, String dateOfBirth) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Student name is required.");
         }
@@ -104,22 +110,39 @@ public class StudentService {
         }
     }
 
-    public List<Student> getAllStudents() throws SQLException {
+    public List<Student> getAllStudents(UserSession session) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
         return studentDAO.listAll();
     }
 
-    public Student getStudentById(int id) throws SQLException {
+    public Student getStudentById(UserSession session, int id) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireStudentAccess(id);
         return studentDAO.findById(id);
     }
 
-    public List<Student> searchStudents(String keyword) throws SQLException {
+    public List<Student> searchStudents(UserSession session, String keyword) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
         return studentDAO.search(keyword);
     }
 
-    public void updateStudent(Student s) throws Exception {
+    public void updateStudent(UserSession session, Student s) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
         if (s == null || s.getId() <= 0) {
             throw new IllegalArgumentException("Invalid student.");
         }
+        session.requireStudentAccess(s.getId());
+
         if (s.getName() == null || s.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("Student name is required.");
         }
@@ -144,10 +167,25 @@ public class StudentService {
         studentDAO.update(s);
     }
 
-    public void setStudentActiveStatus(int studentId, boolean active) throws Exception {
-        studentDAO.setActive(studentId, active);
-        userDAO.setActiveByStudentId(studentId, active);
+    /**
+     * Atomically toggles student and login user active status in a single database transaction.
+     */
+    public void setStudentActiveStatus(UserSession session, int studentId, boolean active) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                studentDAO.setActive(studentId, active, conn);
+                userDAO.setActiveByStudentId(studentId, active, conn);
+                conn.commit();
+            } catch (Exception e) {
+                conn.rollback();
+                throw e;
+            }
+        }
     }
 }
-
-

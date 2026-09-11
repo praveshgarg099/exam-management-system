@@ -3,6 +3,7 @@ package exam_management_syatem.service;
 import exam_management_syatem.dao.ExamScheduleDAO;
 import exam_management_syatem.dao.SubjectDAO;
 import exam_management_syatem.model.Subject;
+import exam_management_syatem.security.UserSession;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -18,7 +19,12 @@ public class SubjectService {
         this.subjectDAO = subjectDAO;
     }
 
-    public Subject addSubject(String name) throws Exception {
+    public Subject addSubject(UserSession session, String name) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Subject name cannot be empty.");
         }
@@ -36,23 +42,44 @@ public class SubjectService {
         return subject;
     }
 
-    public Subject getSubjectByName(String name) throws SQLException {
+    public Subject getSubjectByName(UserSession session, String name) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAuthenticated();
         return subjectDAO.findByName(name);
     }
 
-    public Subject getSubjectById(int id) throws SQLException {
+    public Subject getSubjectById(UserSession session, int id) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAuthenticated();
         return subjectDAO.findById(id);
     }
 
-    public List<Subject> getActiveSubjects() throws SQLException {
+    public List<Subject> getActiveSubjects(UserSession session) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAuthenticated();
         return subjectDAO.listActive();
     }
 
-    public List<Subject> getAllSubjects() throws SQLException {
+    public List<Subject> getAllSubjects(UserSession session) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
         return subjectDAO.listAll();
     }
 
-    public void updateSubject(int id, String newName) throws Exception {
+    public void updateSubject(UserSession session, int id, String newName) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+
         if (newName == null || newName.trim().isEmpty()) {
             throw new IllegalArgumentException("Subject name cannot be empty.");
         }
@@ -69,7 +96,12 @@ public class SubjectService {
         subjectDAO.update(subject);
     }
 
-    public void setSubjectActive(int id, boolean active) throws Exception {
+    public void setSubjectActive(UserSession session, int id, boolean active) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+
         if (!active) {
             ExamScheduleDAO scheduleDAO = new ExamScheduleDAO();
             if (scheduleDAO.hasActiveScheduledExams(id)) {
@@ -79,4 +111,3 @@ public class SubjectService {
         subjectDAO.setActive(id, active);
     }
 }
-

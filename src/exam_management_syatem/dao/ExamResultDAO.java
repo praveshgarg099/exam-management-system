@@ -15,25 +15,38 @@ import java.util.List;
 public class ExamResultDAO {
 
     public int insert(ExamResult result) throws SQLException {
-        String sql = "INSERT INTO exam_results (exam_schedule_id, student_id, subject_id, total_questions, correct_answers, marks, percentage, result, submitted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            if (result.getExamScheduleId() != null) {
-                pstmt.setInt(1, result.getExamScheduleId());
+        try (Connection conn = DatabaseManager.getConnection()) {
+            return insert(result, conn);
+        }
+    }
+
+    public int insert(ExamResult result, Connection conn) throws SQLException {
+        String sql = "INSERT INTO exam_results (attempt_id, exam_schedule_id, student_id, subject_id, total_questions, correct_answers, marks, percentage, result, submitted_at) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            if (result.getAttemptId() != null) {
+                pstmt.setInt(1, result.getAttemptId());
             } else {
                 pstmt.setNull(1, Types.INTEGER);
             }
-            pstmt.setInt(2, result.getStudentId());
-            pstmt.setInt(3, result.getSubjectId());
-            pstmt.setInt(4, result.getTotalQuestions());
-            pstmt.setInt(5, result.getCorrectAnswers());
-            pstmt.setDouble(6, result.getMarks());
-            pstmt.setDouble(7, result.getPercentage());
-            pstmt.setString(8, result.getResult());
+            if (result.getExamScheduleId() != null) {
+                pstmt.setInt(2, result.getExamScheduleId());
+            } else {
+                pstmt.setNull(2, Types.INTEGER);
+            }
+            pstmt.setInt(3, result.getStudentId());
+            pstmt.setInt(4, result.getSubjectId());
+            pstmt.setInt(5, result.getTotalQuestions());
+            pstmt.setInt(6, result.getCorrectAnswers());
+            pstmt.setDouble(7, result.getMarks());
+            pstmt.setDouble(8, result.getPercentage());
+            pstmt.setString(9, result.getResult());
             pstmt.executeUpdate();
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    int genId = rs.getInt(1);
+                    result.setId(genId);
+                    return genId;
                 }
             }
         }
@@ -50,7 +63,7 @@ public class ExamResultDAO {
     }
 
     public ExamResult findById(int id) throws SQLException {
-        String sql = "SELECT r.id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, "
+        String sql = "SELECT r.id, r.attempt_id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, "
                 + "st.name AS student_name, sub.name AS subject_name "
                 + "FROM exam_results r "
                 + "JOIN students st ON r.student_id = st.id "
@@ -71,9 +84,36 @@ public class ExamResultDAO {
         return null;
     }
 
+    public ExamResult findByAttemptId(int attemptId) throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            return findByAttemptId(attemptId, conn);
+        }
+    }
+
+    public ExamResult findByAttemptId(int attemptId, Connection conn) throws SQLException {
+        String sql = "SELECT r.id, r.attempt_id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, "
+                + "st.name AS student_name, sub.name AS subject_name "
+                + "FROM exam_results r "
+                + "JOIN students st ON r.student_id = st.id "
+                + "JOIN subjects sub ON r.subject_id = sub.id "
+                + "WHERE r.attempt_id = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, attemptId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    ExamResult er = mapRow(rs);
+                    er.setStudentName(rs.getString("student_name"));
+                    er.setSubjectName(rs.getString("subject_name"));
+                    return er;
+                }
+            }
+        }
+        return null;
+    }
+
     public List<ExamResult> listAll() throws SQLException {
         List<ExamResult> list = new ArrayList<>();
-        String sql = "SELECT r.id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, "
+        String sql = "SELECT r.id, r.attempt_id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, "
                 + "st.name AS student_name, sub.name AS subject_name "
                 + "FROM exam_results r "
                 + "JOIN students st ON r.student_id = st.id "
@@ -92,9 +132,32 @@ public class ExamResultDAO {
         return list;
     }
 
+    public List<ExamResult> listRecent(int limit) throws SQLException {
+        List<ExamResult> list = new ArrayList<>();
+        String sql = "SELECT r.id, r.attempt_id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, "
+                + "st.name AS student_name, sub.name AS subject_name "
+                + "FROM exam_results r "
+                + "JOIN students st ON r.student_id = st.id "
+                + "JOIN subjects sub ON r.subject_id = sub.id "
+                + "ORDER BY r.submitted_at DESC, r.id DESC LIMIT ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, limit > 0 ? limit : 10);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    ExamResult er = mapRow(rs);
+                    er.setStudentName(rs.getString("student_name"));
+                    er.setSubjectName(rs.getString("subject_name"));
+                    list.add(er);
+                }
+            }
+        }
+        return list;
+    }
+
     public List<ExamResult> listByStudentId(int studentId) throws SQLException {
         List<ExamResult> list = new ArrayList<>();
-        String sql = "SELECT r.id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, "
+        String sql = "SELECT r.id, r.attempt_id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, "
                 + "st.name AS student_name, sub.name AS subject_name "
                 + "FROM exam_results r "
                 + "JOIN students st ON r.student_id = st.id "
@@ -118,7 +181,7 @@ public class ExamResultDAO {
 
     public List<ExamResult> searchAndFilter(String studentKeyword, String subjectName, String passFail) throws SQLException {
         List<ExamResult> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT r.id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, ")
+        StringBuilder sql = new StringBuilder("SELECT r.id, r.attempt_id, r.exam_schedule_id, r.student_id, r.subject_id, r.total_questions, r.correct_answers, r.marks, r.percentage, r.result, r.started_at, r.submitted_at, ")
                 .append("st.name AS student_name, sub.name AS subject_name ")
                 .append("FROM exam_results r ")
                 .append("JOIN students st ON r.student_id = st.id ")
@@ -131,7 +194,7 @@ public class ExamResultDAO {
             params.add("%" + studentKeyword.trim().toLowerCase() + "%");
             params.add("%" + studentKeyword.trim().toLowerCase() + "%");
         }
-        if (subjectName != null && !subjectName.trim().isEmpty() && !subjectName.equalsIgnoreCase("All")) {
+        if (subjectName != null && !subjectName.trim().isEmpty() && !subjectName.equalsIgnoreCase("All") && !subjectName.equalsIgnoreCase("All Subjects")) {
             sql.append("AND LOWER(sub.name) = ? ");
             params.add(subjectName.trim().toLowerCase());
         }
@@ -158,11 +221,15 @@ public class ExamResultDAO {
         return list;
     }
 
-    public int countByResult(String passFail) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM exam_results WHERE LOWER(result) = ?";
+    public int countPassResults() throws SQLException {
+        return countByResult("Pass");
+    }
+
+    public int countByResult(String result) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM exam_results WHERE LOWER(result) = LOWER(?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, passFail.toLowerCase());
+            pstmt.setString(1, result);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);
@@ -187,6 +254,10 @@ public class ExamResultDAO {
     private ExamResult mapRow(ResultSet rs) throws SQLException {
         ExamResult er = new ExamResult();
         er.setId(rs.getInt("id"));
+        int attId = rs.getInt("attempt_id");
+        if (!rs.wasNull()) {
+            er.setAttemptId(attId);
+        }
         int scheduleId = rs.getInt("exam_schedule_id");
         if (!rs.wasNull()) {
             er.setExamScheduleId(scheduleId);

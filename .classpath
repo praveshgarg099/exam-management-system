@@ -39,21 +39,7 @@
 	<classpathentry kind="lib" path="Resource/poi-scratchpad-3.17.jar"/>
 	<classpathentry kind="lib" path="Resource/PrintPreview.jar"/>
 	<classpathentry kind="lib" path="Resource/rs2xml.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.7.15-M1.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.7.15-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.7.15-SNAPSHOT (1).jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.7.15-SNAPSHOT-javadoc.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.7.2.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.7.2-javadoc.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.8.10.1.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.8.10.2 (1).jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.8.11.1.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.8.11.2.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.8.11.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.8.5-pre1.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.8.6.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc-3.8.7.jar"/>
-	<classpathentry kind="lib" path="Resource/sqlite-jdbc4-3.8.2-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="Resource/postgresql-42.7.3.jar"/>
 	<classpathentry kind="lib" path="Resource/stax-api-1.0.1.jar"/>
 	<classpathentry kind="lib" path="Resource/swingx-core-1.6.2-autocompletition.jar"/>
 	<classpathentry kind="lib" path="Resource/ucanaccess-4.0.4.jar"/>

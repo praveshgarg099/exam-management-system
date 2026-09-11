@@ -4,6 +4,7 @@ import exam_management_syatem.dao.QuestionDAO;
 import exam_management_syatem.dao.SubjectDAO;
 import exam_management_syatem.model.Question;
 import exam_management_syatem.model.Subject;
+import exam_management_syatem.security.UserSession;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -17,11 +18,16 @@ public class QuestionService {
         this.subjectDAO = new SubjectDAO();
     }
 
-    public Question addQuestion(int subjectId, String questionText, String option1, String option2, String option3, String option4, String correctAnswer) throws Exception {
-        return addQuestion(subjectId, questionText, option1, option2, option3, option4, correctAnswer, "MEDIUM");
+    public Question addQuestion(UserSession session, int subjectId, String questionText, String option1, String option2, String option3, String option4, String correctAnswer) throws Exception {
+        return addQuestion(session, subjectId, questionText, option1, option2, option3, option4, correctAnswer, "MEDIUM");
     }
 
-    public Question addQuestion(int subjectId, String questionText, String option1, String option2, String option3, String option4, String correctAnswer, String difficulty) throws Exception {
+    public Question addQuestion(UserSession session, int subjectId, String questionText, String option1, String option2, String option3, String option4, String correctAnswer, String difficulty) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+
         validateInputs(questionText, option1, option2, option3, option4, correctAnswer);
 
         Subject subject = subjectDAO.findById(subjectId);
@@ -45,11 +51,16 @@ public class QuestionService {
         return q;
     }
 
-    public void updateQuestion(int questionId, String questionText, String option1, String option2, String option3, String option4, String correctAnswer) throws Exception {
-        updateQuestion(questionId, questionText, option1, option2, option3, option4, correctAnswer, "MEDIUM");
+    public void updateQuestion(UserSession session, int questionId, String questionText, String option1, String option2, String option3, String option4, String correctAnswer) throws Exception {
+        updateQuestion(session, questionId, questionText, option1, option2, option3, option4, correctAnswer, "MEDIUM");
     }
 
-    public void updateQuestion(int questionId, String questionText, String option1, String option2, String option3, String option4, String correctAnswer, String difficulty) throws Exception {
+    public void updateQuestion(UserSession session, int questionId, String questionText, String option1, String option2, String option3, String option4, String correctAnswer, String difficulty) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+
         validateInputs(questionText, option1, option2, option3, option4, correctAnswer);
 
         Question q = new Question();
@@ -65,31 +76,59 @@ public class QuestionService {
         questionDAO.update(q);
     }
 
-    public void setQuestionActive(int questionId, boolean active) throws SQLException {
+    public void setQuestionActive(UserSession session, int questionId, boolean active) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
         questionDAO.setActive(questionId, active);
     }
 
-    public boolean deleteQuestion(int questionId) throws SQLException {
+    public boolean deleteQuestion(UserSession session, int questionId) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
         return questionDAO.delete(questionId);
     }
 
-    public List<Question> getQuestionsBySubjectId(int subjectId) throws SQLException {
+    public List<Question> getQuestionsBySubjectId(UserSession session, int subjectId) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
         return questionDAO.findBySubjectId(subjectId);
     }
 
-    public List<Question> getActiveQuestionsBySubjectId(int subjectId) throws SQLException {
+    public List<Question> getActiveQuestionsBySubjectId(UserSession session, int subjectId) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAuthenticated();
         return questionDAO.findActiveBySubjectId(subjectId);
     }
 
-    public List<Question> searchQuestions(int subjectId, String keyword) throws SQLException {
+    public List<Question> searchQuestions(UserSession session, int subjectId, String keyword) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
         return questionDAO.search(subjectId, keyword);
     }
 
-    public int getQuestionCountBySubjectId(int subjectId) throws SQLException {
+    public int getQuestionCountBySubjectId(UserSession session, int subjectId) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
         return questionDAO.countBySubjectId(subjectId);
     }
 
-    public int getActiveQuestionCountBySubjectId(int subjectId) throws SQLException {
+    public int getActiveQuestionCountBySubjectId(UserSession session, int subjectId) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAuthenticated();
         return questionDAO.countActiveBySubjectId(subjectId);
     }
 
