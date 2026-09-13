@@ -13,4 +13,14 @@ bin/
 # Legacy databases and local backups
 subject1.sqlite
 *.db
+*.accdb
+*.mdb
 backups/
+
+# Local configuration and credentials
+database.properties
+.env
+.env.*
+*.local
+*.log
+
