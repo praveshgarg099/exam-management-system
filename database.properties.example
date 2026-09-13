@@ -1,0 +1,13 @@
+# PostgreSQL Database Configuration Example for Exam Management System
+# Copy or set these as environment variables in production:
+# export DB_HOST=localhost
+# export DB_PORT=5432
+# export DB_NAME=exam_management
+# export DB_USER=postgres
+# export DB_PASSWORD=your_secure_password_here
+
+db.host=localhost
+db.port=5432
+db.name=exam_management
+db.user=postgres
+db.password=your_secure_password_here
