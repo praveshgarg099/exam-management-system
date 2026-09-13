@@ -89,7 +89,17 @@ public class QuestionService {
             throw new SecurityException("Access Denied: Unauthenticated session.");
         }
         session.requireAdmin();
-        return questionDAO.delete(questionId);
+        try {
+            return questionDAO.delete(questionId);
+        } catch (SQLException sqle) {
+            // If question is referenced in historical exam attempts (FK 23503 or RESTRICT 23001), soft-delete to preserve history
+            String state = sqle.getSQLState();
+            if ("23503".equals(state) || "23001".equals(state) || (sqle.getMessage() != null && sqle.getMessage().contains("exam_attempt_questions"))) {
+                questionDAO.setActive(questionId, false);
+                return true;
+            }
+            throw sqle;
+        }
     }
 
     public List<Question> getQuestionsBySubjectId(UserSession session, int subjectId) throws Exception {

@@ -4,7 +4,7 @@ public class AppConfig {
     private static String dbHost = System.getenv("DB_HOST") != null ? System.getenv("DB_HOST") : "localhost";
     private static String dbPort = System.getenv("DB_PORT") != null ? System.getenv("DB_PORT") : "5432";
     private static String dbName = System.getenv("DB_NAME") != null ? System.getenv("DB_NAME") : "exam_management";
-    private static String dbUser = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : System.getProperty("user.name", "ektagarg");
+    private static String dbUser = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : System.getProperty("user.name", "postgres");
     private static String dbPassword = System.getenv("DB_PASSWORD") != null ? System.getenv("DB_PASSWORD") : "";
 
     public static String getDbHost() {

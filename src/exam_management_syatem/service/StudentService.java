@@ -88,16 +88,42 @@ public class StudentService {
             int studentId = studentDAO.insert(s, conn);
 
             User u = new User();
-            u.setUsername(username);
-            u.setPasswordHash(passwordHash);
             u.setRole("STUDENT");
             u.setStudentId(studentId);
             u.setActive(true);
 
-            userDAO.insert(u, conn);
+            String baseUsername = username;
+            String finalUsername = baseUsername;
+            String finalPassword = baseUsername;
+            int suffix = 0;
+
+            while (true) {
+                String candidateUsername = suffix == 0 ? baseUsername : (baseUsername + "_" + suffix);
+                u.setUsername(candidateUsername);
+                u.setPasswordHash(PasswordHasher.hashPassword(candidateUsername));
+
+                java.sql.Savepoint sp = conn.setSavepoint("user_insert_sp");
+                try {
+                    userDAO.insert(u, conn);
+                    conn.releaseSavepoint(sp);
+                    finalUsername = candidateUsername;
+                    finalPassword = candidateUsername;
+                    break;
+                } catch (SQLException sqle) {
+                    if ("23505".equals(sqle.getSQLState())) {
+                        conn.rollback(sp);
+                        suffix++;
+                        if (suffix > 1000) {
+                            throw new SQLException("Unable to generate unique username after 1000 attempts", sqle);
+                        }
+                    } else {
+                        throw sqle;
+                    }
+                }
+            }
 
             conn.commit(); // Commit Transaction
-            return new RegistrationResult(studentId, username, password);
+            return new RegistrationResult(studentId, finalUsername, finalPassword);
         } catch (Exception e) {
             if (conn != null) {
                 try { conn.rollback(); } catch (SQLException ignored) {}
