@@ -20,6 +20,16 @@ import java.awt.event.FocusListener;
 public class SearchField extends JTextField implements FocusListener {
 
     private boolean isFocused = false;
+    private String placeholder = "";
+
+    public SearchField() {
+        this(20);
+    }
+
+    public SearchField(String placeholder) {
+        this(20);
+        this.placeholder = placeholder != null ? placeholder : "";
+    }
 
     public SearchField(int columns) {
         super(columns);
@@ -80,5 +90,16 @@ public class SearchField extends JTextField implements FocusListener {
 
         g2.dispose();
         super.paintComponent(g);
+
+        if (getText().isEmpty() && !placeholder.isEmpty() && !isFocused) {
+            Graphics2D gp = (Graphics2D) g.create();
+            gp.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            gp.setFont(getFont());
+            gp.setColor(Colors.TEXT_MUTED);
+            int paddingLeft = Spacing.MD;
+            int textY = (getHeight() - gp.getFontMetrics().getHeight()) / 2 + gp.getFontMetrics().getAscent();
+            gp.drawString(placeholder, paddingLeft, textY);
+            gp.dispose();
+        }
     }
 }

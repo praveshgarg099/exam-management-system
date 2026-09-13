@@ -5,6 +5,11 @@ import exam_management_syatem.ui.design.Colors;
 import exam_management_syatem.ui.design.Typography;
 import exam_management_syatem.ui.theme.AppTheme;
 import exam_management_syatem.ui.views.admin.AdminDashboardView;
+import exam_management_syatem.ui.views.admin.AdminStudentsView;
+import exam_management_syatem.ui.views.admin.AdminSubjectsView;
+import exam_management_syatem.ui.views.admin.AdminQuestionsView;
+import exam_management_syatem.ui.views.admin.AdminExamsView;
+import exam_management_syatem.ui.views.admin.AdminResultsView;
 import exam_management_syatem.ui.views.student.StudentDashboardView;
 import exam_management_syatem.ui.views.student.StudentMyExamsView;
 import exam_management_syatem.ui.views.student.StudentMyResultsView;
@@ -75,6 +80,16 @@ public class MainApplicationFrame extends JFrame implements NavigationController
             JPanel viewPanel;
             if (item.getId().equals("ADMIN_DASHBOARD")) {
                 viewPanel = new AdminDashboardView(session, this);
+            } else if (item.getId().equals("ADMIN_STUDENTS")) {
+                viewPanel = new AdminStudentsView(session, this);
+            } else if (item.getId().equals("ADMIN_SUBJECTS")) {
+                viewPanel = new AdminSubjectsView(session, this);
+            } else if (item.getId().equals("ADMIN_QUESTIONS")) {
+                viewPanel = new AdminQuestionsView(session, this);
+            } else if (item.getId().equals("ADMIN_EXAMS")) {
+                viewPanel = new AdminExamsView(session, this);
+            } else if (item.getId().equals("ADMIN_RESULTS")) {
+                viewPanel = new AdminResultsView(session, this);
             } else if (item.getId().equals("STUDENT_DASHBOARD")) {
                 viewPanel = new StudentDashboardView(session, this);
             } else if (item.getId().equals("STUDENT_MY_EXAMS")) {

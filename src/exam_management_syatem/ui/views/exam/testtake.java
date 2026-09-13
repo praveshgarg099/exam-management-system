@@ -616,18 +616,31 @@ public class testtake extends JFrame {
 			String scorePercentStr = String.format("%.2f", scorePercent);
 
 			if ("Pass".equalsIgnoreCase(passStatus)) {
-				dispose();
-				last ob = new last();
-				ob.main(new String[]{scorePercentStr, passStatus});
+				JOptionPane.showMessageDialog(this,
+						"Congratulations!\nYour score: " + scorePercentStr + "%\nResult: PASS",
+						"Exam Result", JOptionPane.INFORMATION_MESSAGE);
 			} else {
-				JOptionPane.showMessageDialog(this, "Your score is " + scorePercentStr + "%\nYour result is: FAIL", "Result", JOptionPane.INFORMATION_MESSAGE);
-				dispose();
-				if (currentSession != null && currentSession.isStudent()) {
-					StudentDashboard.mainWithSession(currentSession);
-				} else {
-					index ob = new index();
-					ob.main(null);
-				}
+				JOptionPane.showMessageDialog(this,
+						"Examination Completed.\nYour score: " + scorePercentStr + "%\nResult: FAIL",
+						"Exam Result", JOptionPane.INFORMATION_MESSAGE);
+			}
+
+			dispose();
+
+			if (currentSession != null) {
+				final UserSession retSession = currentSession;
+				EventQueue.invokeLater(() -> {
+					try {
+						exam_management_syatem.ui.shell.MainApplicationFrame appFrame =
+								new exam_management_syatem.ui.shell.MainApplicationFrame(retSession);
+						appFrame.setVisible(true);
+						appFrame.navigateTo("STUDENT_MY_RESULTS");
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
+				});
+			} else {
+				exam_management_syatem.app.Main.main(null);
 			}
 		} catch (Exception ew) {
 			JOptionPane.showMessageDialog(this, "Error submitting exam: " + ew.getMessage(), "Submission Error", JOptionPane.ERROR_MESSAGE);
