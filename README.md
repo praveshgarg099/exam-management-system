@@ -292,9 +292,6 @@ See [DOCKER.md](DOCKER.md) for cloud deployment guides (AWS, DigitalOcean, Rende
 
 ### Administrator Account
 The system administrator account is pre-configured and preserved in PostgreSQL:
-- **Username**: `superadmin`
-- **Password**: `123456`
-- **Role**: `ADMIN`
 
 ### Pre-Seeded Student Accounts
 All 20 sample students have the default password **`Password@123`**:
