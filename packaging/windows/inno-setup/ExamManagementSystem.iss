@@ -49,10 +49,10 @@ Source: "..\launcher\ExamManagementSystem.vbs"; DestDir: "{app}"; Flags: ignorev
 Source: "..\scripts\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; Custom modular Java Runtime Environment (~50MB jlink image)
-Source: "..\..\..\target\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: DirExists(ExpandConstant('{src}\..\..\..\target\runtime'))
+Source: "..\..\..\target\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 
 ; Bundled portable PostgreSQL binaries (if staged during build)
-Source: "..\..\..\dist\pgsql\*"; DestDir: "{app}\pgsql"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: DirExists(ExpandConstant('{src}\..\..\..\dist\pgsql'))
+Source: "..\..\..\dist\pgsql\*"; DestDir: "{app}\pgsql"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 
 [Icons]
 ; Start Menu Shortcuts
@@ -70,9 +70,3 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 [UninstallRun]
 ; Gracefully shut down any running portable PostgreSQL cluster before file removal
 Filename: "{app}\scripts\stop-local-postgres.bat"; Flags: runhidden waituntilterminated
-
-[Code]
-function DirExists(DirName: string): Boolean;
-begin
-  Result := DirExists(DirName);
-end;
