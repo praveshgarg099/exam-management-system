@@ -180,6 +180,11 @@ exam_management_syatem
 │   ├── tools/
 │   │   └── DesignSystemPreview.java          # Visual gallery of all custom Swing components
 │   └── test/                                 # Automated integration and workflow verification test suites
+├── packaging/                                # Desktop application packaging & Windows installer pipeline
+│   ├── README.md                             # Packaging manual & architecture documentation
+│   ├── build-distribution.sh                 # Cross-platform JAR & modular JRE runtime builder
+│   ├── common/conf/                          # Production database configuration template
+│   └── windows/                              # Inno Setup 6 script, launchers (.bat/.vbs), and PowerShell pipeline
 ├── sources.txt                               # Compilation manifest listing all active source files
 └── README.md                                 # Complete project documentation
 ```
@@ -188,15 +193,21 @@ exam_management_syatem
 
 ## 7. Configuration & Environment Variables
 
-The application reads its database connection parameters dynamically from environment variables, falling back to sensible local defaults:
+The application resolves its database configuration dynamically using a multi-tiered hierarchy:
+1. **Environment Variables**: Highest precedence (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`).
+2. **User Profile Directory**:
+   - Windows: `%APPDATA%\ExamManagementSystem\database.properties`
+   - macOS / Linux: `~/.exammanagementsystem/database.properties`
+3. **Application Directory**: `conf/database.properties` or `database.properties` in current working directory.
+4. **Safe Defaults**: `localhost:5432/exam_management` (database user defaults to `postgres` on Windows or local OS user on Unix/macOS).
 
-| Variable | Default Value | Description |
+| Variable / Key | Default Value | Description |
 | :--- | :--- | :--- |
-| `DB_HOST` | `localhost` | PostgreSQL server hostname |
-| `DB_PORT` | `5432` | PostgreSQL server port |
-| `DB_NAME` | `exam_management` | PostgreSQL database name |
-| `DB_USER` | `postgres` (or system user) | PostgreSQL database username |
-| `DB_PASSWORD` | `""` (empty string) | PostgreSQL database password |
+| `DB_HOST` / `db.host` | `localhost` | PostgreSQL server hostname |
+| `DB_PORT` / `db.port` | `5432` | PostgreSQL server port |
+| `DB_NAME` / `db.name` | `exam_management` | PostgreSQL database name |
+| `DB_USER` / `db.user` | `postgres` (Win) / OS user | PostgreSQL database username |
+| `DB_PASSWORD` / `db.password` | `""` (empty string) | PostgreSQL database password |
 
 ---
 
@@ -209,6 +220,7 @@ The application reads its database connection parameters dynamically from enviro
    ```bash
    createdb exam_management
    ```
+   *(Note: The application also includes zero-touch DB creation if connected to administrative `postgres` database).*
 
 ### 1. Compile the Project
 Compile the complete source tree using the provided manifest:
@@ -242,6 +254,25 @@ java -cp "bin:Resource/*" exam_management_syatem.test.ModernAdminViewsVerificati
 # 3. Complete End-to-End Admin & Student Workflow Verification (24 tests)
 java -cp "bin:Resource/*" exam_management_syatem.test.EndToEndWorkflowVerificationTest
 ```
+
+### 5. Desktop Application Packaging & Windows Installer
+To package the Exam Management System into a standalone desktop application:
+
+- **Windows (Single-Click Installer)**:
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+  .\packaging\windows\scripts\build-windows-installer.ps1
+  ```
+  Generates `dist\installer\ExamManagementSystem-Setup.exe` with bundled modular JRE runtime (~51MB) and Inno Setup 6 installer.
+
+- **macOS / Linux (Distribution Assembly & Tests)**:
+  ```bash
+  chmod +x packaging/build-distribution.sh
+  ./packaging/build-distribution.sh
+  ```
+  Assembles `dist/exam-management-system.jar` and custom modular JRE runtime via `jlink`.
+
+See [packaging/README.md](packaging/README.md) for full architectural documentation.
 
 ---
 

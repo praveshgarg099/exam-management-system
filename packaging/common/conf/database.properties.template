@@ -1,0 +1,17 @@
+# ==============================================================================
+# Exam Management System - Production Database Configuration
+# ==============================================================================
+# Location:
+#   Windows: %APPDATA%\ExamManagementSystem\database.properties
+#   macOS/Linux: ~/.exammanagementsystem/database.properties
+#   Or in application directory: conf/database.properties
+#
+# Defaults to local isolated embedded PostgreSQL (localhost:5432).
+# To connect to an external/school database server, update the parameters below.
+# ==============================================================================
+
+db.host=localhost
+db.port=5432
+db.name=exam_management
+db.user=postgres
+db.password=

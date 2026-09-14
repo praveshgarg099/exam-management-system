@@ -24,3 +24,6 @@ database.properties
 *.local
 *.log
 
+# Build and packaging output
+target/
+dist/

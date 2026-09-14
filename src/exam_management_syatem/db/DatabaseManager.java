@@ -21,7 +21,26 @@ public class DatabaseManager {
     }
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(AppConfig.getDbUrl(), AppConfig.getDbUser(), AppConfig.getDbPassword());
+        try {
+            return DriverManager.getConnection(AppConfig.getDbUrl(), AppConfig.getDbUser(), AppConfig.getDbPassword());
+        } catch (SQLException e) {
+            // If the target database does not exist, connect to postgres and create it
+            if ("3D000".equals(e.getSQLState()) || (e.getMessage() != null && e.getMessage().contains("does not exist"))) {
+                ensureDatabaseExists();
+                return DriverManager.getConnection(AppConfig.getDbUrl(), AppConfig.getDbUser(), AppConfig.getDbPassword());
+            }
+            throw e;
+        }
+    }
+
+    private static synchronized void ensureDatabaseExists() {
+        try (Connection adminConn = DriverManager.getConnection(AppConfig.getAdminDbUrl(), AppConfig.getDbUser(), AppConfig.getDbPassword());
+             Statement stmt = adminConn.createStatement()) {
+            stmt.executeUpdate("CREATE DATABASE " + AppConfig.getDbName());
+            System.out.println("[DatabaseManager] Successfully created database: " + AppConfig.getDbName());
+        } catch (Exception ex) {
+            System.err.println("[DatabaseManager] Could not auto-create database: " + ex.getMessage());
+        }
     }
 
     public static synchronized void initializeDatabase() throws SQLException {
@@ -145,6 +164,9 @@ public class DatabaseManager {
 
             // Initialize default admin user if none exists
             ensureDefaultAdmin(conn);
+
+            // Initialize default curriculum & questions if database is brand new and empty
+            ensureDefaultCurriculumAndQuestions(conn);
         }
     }
 
@@ -158,8 +180,81 @@ public class DatabaseManager {
                     pstmt.setString(1, "superadmin");
                     pstmt.setString(2, PasswordHasher.hashPassword("123456"));
                     pstmt.executeUpdate();
+                    System.out.println("[DatabaseManager] Seeded default administrator account: superadmin");
                 }
             }
+        }
+    }
+
+    private static void ensureDefaultCurriculumAndQuestions(Connection conn) {
+        try {
+            int subjectCount = 0;
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM subjects")) {
+                if (rs.next()) subjectCount = rs.getInt(1);
+            }
+
+            if (subjectCount == 0) {
+                System.out.println("[DatabaseManager] Empty curriculum detected. Populating 15 subjects and 750 MCQs...");
+                String[] subjectNames = {
+                        "Java Programming", "Data Structures", "Algorithms", "Database Management Systems", "Operating Systems",
+                        "Computer Networks", "Software Engineering", "Object-Oriented Programming", "Computer Architecture", "Web Technologies",
+                        "Artificial Intelligence", "Machine Learning", "Cloud Computing", "Cyber Security", "Distributed Systems"
+                };
+
+                java.util.List<java.util.List<QuestionBankPart1.QuestionItem>> questionSets = new java.util.ArrayList<>();
+                questionSets.add(QuestionBankPart1.getJavaQuestions());
+                questionSets.add(QuestionBankPart1.getDataStructuresQuestions());
+                questionSets.add(QuestionBankPart1.getAlgorithmsQuestions());
+                questionSets.add(QuestionBankPart1.getDbmsQuestions());
+                questionSets.add(QuestionBankPart1.getOperatingSystemsQuestions());
+
+                questionSets.add(QuestionBankPart2.getComputerNetworksQuestions());
+                questionSets.add(QuestionBankPart2.getSoftwareEngineeringQuestions());
+                questionSets.add(QuestionBankPart2.getOopQuestions());
+                questionSets.add(QuestionBankPart2.getComputerArchitectureQuestions());
+                questionSets.add(QuestionBankPart2.getWebTechnologiesQuestions());
+
+                questionSets.add(QuestionBankPart3.getAiQuestions());
+                questionSets.add(QuestionBankPart3.getMlQuestions());
+                questionSets.add(QuestionBankPart3.getCloudComputingQuestions());
+                questionSets.add(QuestionBankPart3.getCyberSecurityQuestions());
+                questionSets.add(QuestionBankPart3.getDistributedSystemsQuestions());
+
+                for (int i = 0; i < subjectNames.length; i++) {
+                    int subId = -1;
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "INSERT INTO subjects (name, active) VALUES (?, true) RETURNING id")) {
+                        ps.setString(1, subjectNames[i]);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) subId = rs.getInt(1);
+                        }
+                    }
+
+                    if (subId > 0 && i < questionSets.size()) {
+                        java.util.List<QuestionBankPart1.QuestionItem> qList = questionSets.get(i);
+                        try (PreparedStatement qps = conn.prepareStatement(
+                                "INSERT INTO questions (subject_id, question_text, option1, option2, option3, option4, correct_answer, difficulty, active) " +
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, true)")) {
+                            for (QuestionBankPart1.QuestionItem q : qList) {
+                                qps.setInt(1, subId);
+                                qps.setString(2, q.question);
+                                qps.setString(3, q.optA);
+                                qps.setString(4, q.optB);
+                                qps.setString(5, q.optC);
+                                qps.setString(6, q.optD);
+                                qps.setString(7, q.correct);
+                                qps.setString(8, q.difficulty);
+                                qps.addBatch();
+                            }
+                            qps.executeBatch();
+                        }
+                    }
+                }
+                System.out.println("[DatabaseManager] Completed initial seeding of 15 subjects and 750 MCQs.");
+            }
+        } catch (Exception e) {
+            System.err.println("[DatabaseManager] Note: Curriculum auto-seed skipped or completed: " + e.getMessage());
         }
     }
 }

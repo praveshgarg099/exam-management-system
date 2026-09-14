@@ -31,6 +31,10 @@ public class ImageLoader {
 
             // 1. Try loading from classpath
             URL imgURL = ImageLoader.class.getResource(cleanPath);
+            if (imgURL == null && !cleanPath.startsWith("/images/")) {
+                String filenameOnly = new File(cleanPath).getName();
+                imgURL = ImageLoader.class.getResource("/images/" + filenameOnly);
+            }
             if (imgURL != null) {
                 return new ImageIcon(imgURL);
             }
