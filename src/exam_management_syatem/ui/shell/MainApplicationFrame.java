@@ -122,6 +122,30 @@ public class MainApplicationFrame extends JFrame implements NavigationController
         }
         
         sidebar.updateActiveState(viewId);
+
+        // Lazy load data for the navigated view
+        JPanel activeView = registry.getView(viewId);
+        if (activeView instanceof StudentDashboardView) {
+            ((StudentDashboardView) activeView).refreshData();
+        } else if (activeView instanceof StudentMyExamsView) {
+            ((StudentMyExamsView) activeView).refreshData();
+        } else if (activeView instanceof StudentMyResultsView) {
+            ((StudentMyResultsView) activeView).refreshData();
+        } else if (activeView instanceof StudentProfileView) {
+            ((StudentProfileView) activeView).loadProfileData();
+        } else if (activeView instanceof AdminDashboardView) {
+            ((AdminDashboardView) activeView).refreshData();
+        } else if (activeView instanceof AdminStudentsView) {
+            ((AdminStudentsView) activeView).refreshData();
+        } else if (activeView instanceof AdminSubjectsView) {
+            ((AdminSubjectsView) activeView).refreshData();
+        } else if (activeView instanceof AdminQuestionsView) {
+            ((AdminQuestionsView) activeView).refreshData();
+        } else if (activeView instanceof AdminExamsView) {
+            ((AdminExamsView) activeView).refreshData();
+        } else if (activeView instanceof AdminResultsView) {
+            ((AdminResultsView) activeView).refreshData();
+        }
     }
 
     @Override

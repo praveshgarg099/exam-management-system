@@ -3,14 +3,23 @@ package exam_management_syatem.db;
 import exam_management_syatem.config.AppConfig;
 import exam_management_syatem.security.PasswordHasher;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class DatabaseManager {
+
+    private static final BlockingQueue<Connection> pool = new LinkedBlockingQueue<>(10);
+    private static final int MAX_POOL_SIZE = 8;
+    private static int activeCount = 0;
 
     static {
         try {
@@ -21,6 +30,27 @@ public class DatabaseManager {
     }
 
     public static Connection getConnection() throws SQLException {
+        Connection physicalConn = pool.poll();
+        if (physicalConn != null) {
+            try {
+                if (!physicalConn.isClosed() && physicalConn.isValid(1)) {
+                    return wrapConnection(physicalConn);
+                }
+            } catch (Exception ignored) {}
+            try { physicalConn.close(); } catch (Exception ignored) {}
+            synchronized (DatabaseManager.class) {
+                if (activeCount > 0) activeCount--;
+            }
+        }
+
+        synchronized (DatabaseManager.class) {
+            physicalConn = createPhysicalConnection();
+            activeCount++;
+        }
+        return wrapConnection(physicalConn);
+    }
+
+    private static Connection createPhysicalConnection() throws SQLException {
         try {
             return DriverManager.getConnection(AppConfig.getDbUrl(), AppConfig.getDbUser(), AppConfig.getDbPassword());
         } catch (SQLException e) {
@@ -31,6 +61,36 @@ public class DatabaseManager {
             }
             throw e;
         }
+    }
+
+    private static Connection wrapConnection(Connection target) {
+        return (Connection) Proxy.newProxyInstance(
+                DatabaseManager.class.getClassLoader(),
+                new Class<?>[]{Connection.class},
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        if ("close".equals(method.getName())) {
+                            if (!target.isClosed() && pool.size() < MAX_POOL_SIZE) {
+                                try {
+                                    if (!target.getAutoCommit()) {
+                                        target.rollback();
+                                        target.setAutoCommit(true);
+                                    }
+                                } catch (Exception ignored) {}
+                                pool.offer(target);
+                                return null;
+                            }
+                            synchronized (DatabaseManager.class) {
+                                if (activeCount > 0) activeCount--;
+                            }
+                            target.close();
+                            return null;
+                        }
+                        return method.invoke(target, args);
+                    }
+                }
+        );
     }
 
     private static synchronized void ensureDatabaseExists() {

@@ -86,7 +86,6 @@ public class AdminSubjectsView extends JPanel {
         this.questionService = new QuestionService();
 
         initComponent();
-        refreshData();
     }
 
     private void initComponent() {

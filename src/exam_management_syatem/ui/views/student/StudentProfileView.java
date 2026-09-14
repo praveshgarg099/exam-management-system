@@ -51,7 +51,6 @@ public class StudentProfileView extends JPanel {
         this.authService = new AuthenticationService();
 
         initComponent();
-        loadProfileData();
     }
 
     private void initComponent() {

@@ -93,7 +93,6 @@ public class AdminResultsView extends JPanel {
         this.subjectService = new SubjectService();
 
         initComponent();
-        refreshData();
     }
 
     private void initComponent() {

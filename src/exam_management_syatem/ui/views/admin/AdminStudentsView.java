@@ -75,7 +75,6 @@ public class AdminStudentsView extends JPanel {
         this.authService = new AuthenticationService();
 
         initComponent();
-        refreshData();
     }
 
     private void initComponent() {

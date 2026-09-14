@@ -98,7 +98,6 @@ public class StudentMyResultsView extends JPanel {
         this.subjectService = new SubjectService();
 
         initComponent();
-        refreshData();
     }
 
     private void initComponent() {

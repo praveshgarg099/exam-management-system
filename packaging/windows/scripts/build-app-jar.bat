@@ -50,7 +50,7 @@ if %ERRORLEVEL% neq 0 (
     echo [ERROR] Failed to compile GenerateManifest.java.
     exit /b %ERRORLEVEL%
 )
-java -cp target exam_management_syatem.packaging.GenerateManifest dist/lib target/MANIFEST.MF 2.0.4
+java -cp target exam_management_syatem.packaging.GenerateManifest dist/lib target/MANIFEST.MF 2.0.5
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Failed to generate target\MANIFEST.MF.
     exit /b %ERRORLEVEL%

@@ -99,7 +99,6 @@ public class AdminExamsView extends JPanel {
         this.questionService = new QuestionService();
 
         initComponent();
-        refreshData();
     }
 
     private void initComponent() {

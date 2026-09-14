@@ -74,7 +74,6 @@ public class AdminDashboardView extends JPanel {
         this.resultService = new ResultService();
 
         initComponent();
-        loadDashboardData();
     }
 
     private void initComponent() {
@@ -314,6 +313,10 @@ public class AdminDashboardView extends JPanel {
 
         bar.add(statusLabel);
         return bar;
+    }
+
+    public void refreshData() {
+        loadDashboardData();
     }
 
     private void loadDashboardData() {
