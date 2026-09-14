@@ -274,6 +274,18 @@ To package the Exam Management System into a standalone desktop application:
 
 See [packaging/README.md](packaging/README.md) for full architectural documentation.
 
+### 6. All-In-One Docker Container (Zero-Install Web Browser Access)
+To run the entire application (PostgreSQL + Java + Web GUI) in a single container without installing Java, PostgreSQL, or desktop software:
+
+```bash
+docker compose up -d --build
+```
+Open in any browser:
+```text
+http://localhost:8080
+```
+See [DOCKER.md](DOCKER.md) for cloud deployment guides (AWS, DigitalOcean, Render, Caddy/Nginx).
+
 ---
 
 ## 9. Default Credentials & Sample Accounts

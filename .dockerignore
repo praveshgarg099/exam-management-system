@@ -1,0 +1,11 @@
+.git
+.metadata
+.settings
+.DS_Store
+*.local
+*.log
+backups/
+bin/
+dist/
+target/
+packaging/cache/

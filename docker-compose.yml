@@ -1,0 +1,32 @@
+version: '3.8'
+
+# ==============================================================================
+# Exam Management System - One-Click All-In-One Docker Deployment
+# Run:
+#   docker compose up -d
+# Access:
+#   http://localhost:8080
+# ==============================================================================
+
+services:
+  exam-management-system:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: praveshgarg/exam-management-system:latest
+    container_name: exam-management-system
+    ports:
+      - "8080:8080"
+    environment:
+      - RESOLUTION=1280x800
+      - DB_NAME=exam_management
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+    volumes:
+      # Persist PostgreSQL data across container restarts
+      - ems-db-data:/var/lib/postgresql
+    restart: unless-stopped
+
+volumes:
+  ems-db-data:
+    name: ems-database-volume
