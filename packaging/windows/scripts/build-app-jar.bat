@@ -41,20 +41,23 @@ if exist "images" (
 
 rem 5. Build classpath and copy libs
 echo [4/5] Copying dependencies and building manifest...
-set "CP_LINE="
 for %%F in (Resource\*.jar) do (
     copy /Y "%%F" "dist\lib\" >nul
-    set "CP_LINE=!CP_LINE! lib/%%~nxF"
 )
 
-(
-echo Manifest-Version: 1.0
-echo Main-Class: exam_management_syatem.app.Main
-echo Class-Path:!CP_LINE!
-echo Created-By: Exam Management System Build System
-echo Implementation-Title: Exam Management System
-echo Implementation-Version: 1.0.0
-) > target\MANIFEST.MF
+powershell -NoProfile -Command ^
+    "$jars = (Get-ChildItem -Path 'dist\lib\*.jar' | Sort-Object Name | ForEach-Object { 'lib/' + $_.Name }) -join ' '; " ^
+    "$lines = @('Manifest-Version: 1.0', 'Main-Class: exam_management_syatem.app.Main'); " ^
+    "$cur = 'Class-Path: '; " ^
+    "foreach ($part in $jars.Split(' ')) { " ^
+    "    if (($cur + ' ' + $part).Length -gt 70) { $lines += $cur; $cur = ' ' + $part; } " ^
+    "    else { $cur = if ($cur -eq 'Class-Path: ') { $cur + $part } else { $cur + ' ' + $part }; } " ^
+    "}; " ^
+    "$lines += $cur; " ^
+    "$lines += 'Created-By: Exam Management System Build System'; " ^
+    "$lines += 'Implementation-Title: Exam Management System'; " ^
+    "$lines += 'Implementation-Version: 2.0.0'; " ^
+    "[System.IO.File]::WriteAllLines('target\MANIFEST.MF', $lines);"
 
 rem 6. Package JAR
 echo [5/5] Creating dist\exam-management-system.jar...
