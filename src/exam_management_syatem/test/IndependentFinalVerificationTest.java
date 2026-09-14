@@ -130,7 +130,7 @@ public class IndependentFinalVerificationTest {
         System.out.println("\n--- 2. Username Collision Under Identical Base Username ---");
         AuthenticationService authService = new AuthenticationService();
         StudentService studentService = new StudentService();
-        UserSession adminSession = authService.loginAdmin("superadmin", "123456");
+        UserSession adminSession = authService.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         // Use name "John Doe" and different Aadhars that end in the EXACT SAME 4 digits: "9988"
         // Base username for all 3 will be: john + 9988 = "john9988"
@@ -192,11 +192,11 @@ public class IndependentFinalVerificationTest {
         ExamService es = new ExamService();
         ResultService rs = new ResultService();
 
-        UserSession admin = auth.loginAdmin("superadmin", "123456");
+        UserSession admin = auth.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         // 1. Invalid Login (wrong password)
         try {
-            auth.loginAdmin("superadmin", "WRONG_PASSWORD_XYZ");
+            auth.loginAdmin(TestCredentials.getAdminUsername(), "WRONG_PASSWORD_XYZ");
             fail("Login with invalid password should fail");
         } catch (Exception e) {
             pass("Invalid admin login correctly rejected: " + e.getMessage());
@@ -321,7 +321,7 @@ public class IndependentFinalVerificationTest {
         ExamService es = new ExamService();
         ResultService rs = new ResultService();
 
-        UserSession admin = auth.loginAdmin("superadmin", "123456");
+        UserSession admin = auth.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         cleanTestAadhar("888777666555");
         StudentService.RegistrationResult sReg = ss.registerStudent(
@@ -389,7 +389,7 @@ public class IndependentFinalVerificationTest {
         ExamService es = new ExamService();
         ResultService rs = new ResultService();
 
-        UserSession admin = auth.loginAdmin("superadmin", "123456");
+        UserSession admin = auth.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         cleanTestAadhar("777666555444");
         StudentService.RegistrationResult sReg = ss.registerStudent(

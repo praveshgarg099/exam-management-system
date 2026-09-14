@@ -19,6 +19,8 @@ backups/
 
 # Local configuration and credentials
 database.properties
+test-credentials.properties
+test-credentials.local
 .env
 .env.*
 *.local

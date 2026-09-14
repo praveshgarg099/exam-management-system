@@ -105,7 +105,7 @@ public class PostgreSQLMigrationVerification {
         ExamResultDAO resultDAO = new ExamResultDAO();
 
         assertTrue("Historical students preserved (count >= 3)", studentDAO.listAll().size() >= 3);
-        assertTrue("Historical users preserved (count >= 5)", userDAO.findByUsername("superadmin") != null);
+        assertTrue("Historical users preserved (count >= 5)", userDAO.findByUsername(TestCredentials.getAdminUsername()) != null);
         assertTrue("Historical subjects preserved (count >= 6)", subjectDAO.listAll().size() >= 6);
         assertTrue("Historical questions preserved (count >= 27)", questionDAO.countActiveBySubjectId(1) > 0);
         assertTrue("Historical schedules preserved (count >= 3)", scheduleDAO.listAll().size() >= 3);

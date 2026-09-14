@@ -133,7 +133,6 @@ jobs:
             - **`exam-management-system.jar`**: Cross-platform application JAR for macOS and Linux.
 
             ### Default Credentials:
-            - **Admin**: `superadmin` / `123456`
             - **Student**: `aaravs` / `Password@123`
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

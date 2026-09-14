@@ -21,6 +21,8 @@ public class AppConfig {
     private static String dbPassword = "npg_ORxPF21WDIKb";
     private static String dbSslMode = "require";
     private static String customDbUrl = null;
+    private static String adminUsername = "";
+    private static String adminPassword = "";
 
     static {
         loadConfiguration();
@@ -35,6 +37,8 @@ public class AppConfig {
         dbPassword = "npg_ORxPF21WDIKb";
         dbSslMode = "require";
         customDbUrl = null;
+        adminUsername = "";
+        adminPassword = "";
 
         // 2. Try loading from external properties file
         Properties props = new Properties();
@@ -62,6 +66,12 @@ public class AppConfig {
                 }
                 if (props.getProperty("db.sslmode") != null && !props.getProperty("db.sslmode").trim().isEmpty()) {
                     dbSslMode = props.getProperty("db.sslmode").trim();
+                }
+                if (props.getProperty("admin.username") != null && !props.getProperty("admin.username").trim().isEmpty()) {
+                    adminUsername = props.getProperty("admin.username").trim();
+                }
+                if (props.getProperty("admin.password") != null && !props.getProperty("admin.password").trim().isEmpty()) {
+                    adminPassword = props.getProperty("admin.password").trim();
                 }
             } catch (Exception e) {
                 System.err.println("[AppConfig] Warning: Could not read configuration file: " + propFile.getAbsolutePath());
@@ -92,6 +102,12 @@ public class AppConfig {
         }
         if (System.getenv("DB_SSLMODE") != null && !System.getenv("DB_SSLMODE").trim().isEmpty()) {
             dbSslMode = System.getenv("DB_SSLMODE").trim();
+        }
+        if (System.getenv("ADMIN_USERNAME") != null && !System.getenv("ADMIN_USERNAME").trim().isEmpty()) {
+            adminUsername = System.getenv("ADMIN_USERNAME").trim();
+        }
+        if (System.getenv("ADMIN_PASSWORD") != null && !System.getenv("ADMIN_PASSWORD").trim().isEmpty()) {
+            adminPassword = System.getenv("ADMIN_PASSWORD").trim();
         }
     }
 
@@ -213,5 +229,25 @@ public class AppConfig {
             url.append("?sslmode=require");
         }
         return url.toString();
+    }
+
+    public static String getAdminUsername() {
+        return adminUsername;
+    }
+
+    public static void setAdminUsername(String username) {
+        if (username != null && !username.trim().isEmpty()) {
+            adminUsername = username.trim();
+        }
+    }
+
+    public static String getAdminPassword() {
+        return adminPassword;
+    }
+
+    public static void setAdminPassword(String password) {
+        if (password != null && !password.trim().isEmpty()) {
+            adminPassword = password.trim();
+        }
     }
 }

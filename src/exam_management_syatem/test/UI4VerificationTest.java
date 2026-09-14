@@ -93,7 +93,7 @@ public class UI4VerificationTest {
 
     private static void testKpiCardsAndDataMapping() throws Exception {
         System.out.println("\n--- 2. Five KPI Cards & Data Mapping ---");
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         final AdminDashboardView[] viewHolder = new AdminDashboardView[1];
         SwingUtilities.invokeAndWait(() -> {
@@ -165,7 +165,7 @@ public class UI4VerificationTest {
 
     private static void testRecentResultsTableAndStatusBadges() throws Exception {
         System.out.println("\n--- 3. Recent Results Table & Status Badges ---");
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         ResultService rs = new ResultService();
         List<ExamResult> recent = rs.getRecentResults(adminSession, 10);
 
@@ -235,7 +235,7 @@ public class UI4VerificationTest {
 
     private static void testQuickActionsNavigationDispatch() throws Exception {
         System.out.println("\n--- 4. Quick Actions Centralized Navigation Dispatch ---");
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         List<String> dispatchedRoutes = new ArrayList<>();
 
         NavigationController mockController = new NavigationController() {
@@ -313,7 +313,7 @@ public class UI4VerificationTest {
 
     private static void testResponsiveSizes() throws Exception {
         System.out.println("\n--- 5. Responsive Layout & Scrolling Verification ---");
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         final JFrame[] frameHolder = new JFrame[1];
         SwingUtilities.invokeAndWait(() -> {

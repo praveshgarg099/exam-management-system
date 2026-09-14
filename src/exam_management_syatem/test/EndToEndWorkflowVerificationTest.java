@@ -89,7 +89,7 @@ public class EndToEndWorkflowVerificationTest {
         ResultService resultService = new ResultService();
 
         // 1. Login Admin
-        UserSession adminSession = authService.loginAdmin("superadmin", "123456");
+        UserSession adminSession = authService.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         if (adminSession != null && adminSession.isAdmin()) {
             pass("Step 1: Admin successfully authenticated with role = ADMIN");
         } else {
@@ -250,7 +250,7 @@ public class EndToEndWorkflowVerificationTest {
         ExamService examService = new ExamService();
         ResultService resultService = new ResultService();
 
-        UserSession adminSession = authService.loginAdmin("superadmin", "123456");
+        UserSession adminSession = authService.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         // Prepare test student and exam for the student workflow
         String testAadhar = "7777" + (System.currentTimeMillis() % 100000000L);

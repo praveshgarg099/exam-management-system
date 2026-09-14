@@ -194,8 +194,8 @@ public class UI3VerificationTest {
         handleLoginMethod.setAccessible(true);
 
         SwingUtilities.invokeAndWait(() -> {
-            usernameField.setText("superadmin");
-            passwordField.setText("123456");
+            usernameField.setText(TestCredentials.getAdminUsername());
+            passwordField.setText(TestCredentials.getAdminPassword());
             try {
                 handleLoginMethod.invoke(panel);
             } catch (Exception e) {
@@ -206,7 +206,7 @@ public class UI3VerificationTest {
         boolean completed = latch.await(5, TimeUnit.SECONDS);
         if (completed && sessionRef.get() != null) {
             UserSession s = sessionRef.get();
-            if (s.isAdmin() && "superadmin".equalsIgnoreCase(s.getUsername())) {
+            if (s.isAdmin() && TestCredentials.getAdminUsername().equalsIgnoreCase(s.getUsername())) {
                 pass("Admin login authenticated successfully with UserSession role = " + s.getRole());
             } else {
                 fail("UserSession does not have admin role");
@@ -221,7 +221,7 @@ public class UI3VerificationTest {
         exam_management_syatem.service.StudentService studentService = new exam_management_syatem.service.StudentService();
         long suffix = System.currentTimeMillis() % 100000000L;
         String aadhar = String.format("%012d", suffix);
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         exam_management_syatem.service.StudentService.RegistrationResult reg = studentService.registerStudent(
             adminSession, "UIStudent", "9876543210", "student_" + suffix + "@example.com", aadhar, "01012000"
         );
@@ -357,8 +357,8 @@ public class UI3VerificationTest {
         handleLoginMethod.setAccessible(true);
 
         SwingUtilities.invokeAndWait(() -> {
-            usernameField.setText("superadmin");
-            passwordField.setText("123456");
+            usernameField.setText(TestCredentials.getAdminUsername());
+            passwordField.setText(TestCredentials.getAdminPassword());
             try {
                 handleLoginMethod.invoke(panel);
             } catch (Exception e) {

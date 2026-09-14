@@ -265,12 +265,16 @@ public class DatabaseManager {
         try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(checkAdminSql)) {
             if (rs.next() && rs.getInt(1) == 0) {
-                String insertAdminSql = "INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'ADMIN')";
-                try (PreparedStatement pstmt = conn.prepareStatement(insertAdminSql)) {
-                    pstmt.setString(1, "superadmin");
-                    pstmt.setString(2, PasswordHasher.hashPassword("123456"));
-                    pstmt.executeUpdate();
-                    System.out.println("[DatabaseManager] Seeded default administrator account: superadmin");
+                String adminUser = AppConfig.getAdminUsername();
+                String adminPass = AppConfig.getAdminPassword();
+                if (adminUser != null && !adminUser.trim().isEmpty() && adminPass != null && !adminPass.trim().isEmpty()) {
+                    String insertAdminSql = "INSERT INTO users (username, password_hash, role) VALUES (?, ?, 'ADMIN')";
+                    try (PreparedStatement pstmt = conn.prepareStatement(insertAdminSql)) {
+                        pstmt.setString(1, adminUser);
+                        pstmt.setString(2, PasswordHasher.hashPassword(adminPass));
+                        pstmt.executeUpdate();
+                        System.out.println("[DatabaseManager] Seeded default administrator account successfully.");
+                    }
                 }
             }
         }

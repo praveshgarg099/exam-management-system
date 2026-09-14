@@ -36,6 +36,7 @@ src/exam_management_syatem/ui/views/exam/testtake.java
 src/exam_management_syatem/tools/DesignSystemPreview.java
 src/exam_management_syatem/index.java
 src/exam_management_syatem/app/Main.java
+src/exam_management_syatem/test/TestCredentials.java
 src/exam_management_syatem/test/UI5VerificationTest.java
 src/exam_management_syatem/test/DemoDataApplicationVerificationTest.java
 src/exam_management_syatem/test/UI4VerificationTest.java

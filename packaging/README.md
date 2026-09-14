@@ -52,7 +52,7 @@ The packaging architecture is engineered to provide a seamless, consumer-grade d
 2. **Zero-Touch PostgreSQL Provisioning**:
    - Checks if PostgreSQL is already active on port 5432 (e.g. system service or existing install).
    - If not active, initialises and starts a portable PostgreSQL cluster located safely in `%LOCALAPPDATA%\ExamManagementSystem\pgsql\data`.
-   - On launch, `DatabaseManager` connects to the server, automatically runs `CREATE DATABASE exam_management` if absent, creates all 6 relational tables, provisions the default `superadmin`, and auto-seeds the 15 subjects and 750 MCQs.
+   - On launch, `DatabaseManager` connects to the server, automatically runs `CREATE DATABASE exam_management` if absent, creates all 6 relational tables, provisions the administrator account, and auto-seeds the 15 subjects and 750 MCQs.
 3. **Silent Native Launcher**: Double-clicking the desktop shortcut runs `ExamManagementSystem.vbs`, which launches the batch script and `javaw.exe` silently without a black command-prompt window flickering on the screen.
 4. **Data Preservation**: User databases and configuration are stored in user-writable `%LOCALAPPDATA%` and `%APPDATA%` paths, ensuring that application updates or uninstalls never accidentally erase user test results or student records.
 5. **Preserved Core Architecture**: Zero rewrites. Retains pure Java 19+, Swing/AWT, PostgreSQL, JDBC, DAO, and Service layers with 100% test pass rate across all verification suites.
@@ -165,7 +165,7 @@ To run the full test suite against the packaged artifacts:
    3. `conf\database.properties`
    4. Safe defaults (`localhost:5432/exam_management`, user: `postgres` on Windows or login name on Unix)
 7. `DatabaseManager` connects to PostgreSQL. If `exam_management` database does not exist, it connects to administrative `postgres` database and executes `CREATE DATABASE exam_management`.
-8. `DatabaseManager` verifies tables. If empty, it provisions the default admin (`superadmin` / `123456`) and seeds 15 subjects and 750 MCQs.
+8. `DatabaseManager` verifies tables. If empty, it provisions the initial administrator account and seeds 15 subjects and 750 MCQs.
 9. Swing Login Window appears.
 
 ### Customizing Configuration

@@ -49,7 +49,7 @@ public class ModernAdminViewsVerificationTest {
             DatabaseManager.initializeDatabase();
 
             AuthenticationService authService = new AuthenticationService();
-            adminSession = authService.loginAdmin("superadmin", "123456");
+            adminSession = authService.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
             // Find an active student for security segregation checks
             StudentService studentService = new StudentService();

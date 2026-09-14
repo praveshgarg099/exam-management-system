@@ -106,7 +106,7 @@ public class UI5VerificationTest {
         }
 
         // 1.2 Admin session rejection for student-only operations
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         try {
             examService.getExistingAttempt(adminSession, 1);
             fail("Admin session should be rejected by getExistingAttempt (requires STUDENT)");
@@ -227,7 +227,7 @@ public class UI5VerificationTest {
 
     private static void testAuthoritativeStartAndResumeDelegation() throws Exception {
         System.out.println("\n--- 4. Authoritative Start/Resume Lifecycle Delegation ---");
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         StudentService studentService = new StudentService();
         ExamService examService = new ExamService();
         SubjectService subjectService = new SubjectService();
@@ -297,7 +297,7 @@ public class UI5VerificationTest {
 
     private static void testTerminalAttemptInvariant() throws Exception {
         System.out.println("\n--- 5. Terminal Attempt Invariant Enforcement ---");
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         StudentService studentService = new StudentService();
         ExamService examService = new ExamService();
         SubjectService subjectService = new SubjectService();
@@ -349,7 +349,7 @@ public class UI5VerificationTest {
         System.out.println("\n--- 6. Expired Attempt Handling (No Fake Results) ---");
         ExamAttemptDAO attemptDAO = new ExamAttemptDAO();
         StudentService studentService = new StudentService();
-        UserSession adminSession = new AuthenticationService().loginAdmin("superadmin", "123456");
+        UserSession adminSession = new AuthenticationService().loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         long rnd = System.currentTimeMillis() % 10000000;
         StudentService.RegistrationResult expReg = studentService.registerStudent(adminSession, "Expired Attempt Student",
@@ -376,7 +376,7 @@ public class UI5VerificationTest {
         System.out.println("\n--- 7. Password Change Security Delegation ---");
         AuthenticationService authService = new AuthenticationService();
         StudentService studentService = new StudentService();
-        UserSession adminSession = authService.loginAdmin("superadmin", "123456");
+        UserSession adminSession = authService.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         long rnd = System.currentTimeMillis() % 10000000;
         StudentService.RegistrationResult passReg = studentService.registerStudent(adminSession, "Pass Student",

@@ -87,7 +87,7 @@ public class FreshDatabaseVerificationTest {
                 }
             }
 
-            // Users: 21 (1 superadmin + 20 students)
+            // Users: 21 (1 Admin + 20 students)
             try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM users")) {
                 if (rs.next() && rs.getInt(1) == 21) {
                     pass("Verified users count = 21 (1 Admin + 20 Students)");
@@ -96,12 +96,12 @@ public class FreshDatabaseVerificationTest {
                 }
             }
 
-            // Superadmin preserved
+            // Admin account preserved
             try (ResultSet rs = stmt.executeQuery("SELECT id, username, role, active FROM users WHERE role = 'ADMIN'")) {
-                if (rs.next() && rs.getInt("id") == 1 && "superadmin".equals(rs.getString("username")) && rs.getBoolean("active")) {
-                    pass("Verified superadmin account preserved intact (ID: 1, Role: ADMIN, Active: true)");
+                if (rs.next() && rs.getInt("id") == 1 && rs.getBoolean("active")) {
+                    pass("Verified administrator account preserved intact (ID: 1, Role: ADMIN, Active: true)");
                 } else {
-                    fail("Superadmin account altered or missing");
+                    fail("Administrator account altered or missing");
                 }
             }
 
@@ -180,7 +180,7 @@ public class FreshDatabaseVerificationTest {
     private static void testAdminApplicationWorkflow() throws Exception {
         System.out.println("\n--- 2. Admin Application UI & Service Workflow ---");
         AuthenticationService authService = new AuthenticationService();
-        UserSession adminSession = authService.loginAdmin("superadmin", "123456");
+        UserSession adminSession = authService.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
 
         if (adminSession != null && adminSession.isAdmin()) {
             pass("Admin authenticated successfully with preserved credentials");

@@ -291,7 +291,7 @@ See [DOCKER.md](DOCKER.md) for cloud deployment guides (AWS, DigitalOcean, Rende
 ## 9. Default Credentials & Sample Accounts
 
 ### Administrator Account
-The system administrator account is pre-configured and preserved in PostgreSQL:
+The system administrator account is managed securely via environment variables or application configuration (`ADMIN_USERNAME` and `ADMIN_PASSWORD`), or initialized upon first launch. Passwords can be updated at any time in the application under Admin Settings/Profile.
 
 ### Pre-Seeded Student Accounts
 All 20 sample students have the default password **`Password@123`**:

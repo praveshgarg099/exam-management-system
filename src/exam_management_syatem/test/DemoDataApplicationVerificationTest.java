@@ -69,7 +69,7 @@ public class DemoDataApplicationVerificationTest {
     private static void testAdminUIWithSeededData() throws Exception {
         System.out.println("\n--- 1. Admin Application Workflow with Seeded PostgreSQL Data ---");
         AuthenticationService authService = new AuthenticationService();
-        UserSession adminSession = authService.loginAdmin("superadmin", "123456");
+        UserSession adminSession = authService.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         pass("Admin login authenticated successfully");
 
         final MainApplicationFrame[] frameHolder = new MainApplicationFrame[1];
@@ -152,7 +152,7 @@ public class DemoDataApplicationVerificationTest {
         }
 
         // Interactive workflow test: Admin schedules a verification exam, student takes and submits it
-        UserSession adminSession = authService.loginAdmin("superadmin", "123456");
+        UserSession adminSession = authService.loginAdmin(TestCredentials.getAdminUsername(), TestCredentials.getAdminPassword());
         SubjectService subjectService = new SubjectService();
         List<Subject> subjects = subjectService.getAllSubjects(adminSession);
         Subject javaSub = subjects.stream().filter(s -> s.getName().equals("TEST Java Programming")).findFirst().orElse(subjects.get(0));

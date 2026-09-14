@@ -31,9 +31,7 @@ The complete Exam Management System desktop window will appear inside your brows
 ## 2. Default Login Credentials
 
 ### Administrator
-- **Username**: `superadmin`
-- **Password**: `123456`
-- **Role**: `ADMIN` (Dashboard, Question Bank, Scheduling, Analytics)
+Administrator credentials can be provided via environment variables (`ADMIN_USERNAME` and `ADMIN_PASSWORD`) or configured in the database properties file.
 
 ### Sample Students
 All 20 pre-seeded students use password `Password@123`:

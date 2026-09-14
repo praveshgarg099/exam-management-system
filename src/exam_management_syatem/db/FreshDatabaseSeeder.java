@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Transactional Database Reset and Fresh Realistic Data Seeder.
- * Resets non-admin data cleanly, preserves superadmin intact, and populates
+ * Resets non-admin data cleanly, preserves administrator accounts intact, and populates
  * 20 students, 15 subjects, 750+ MCQs, 35 schedules, 18 attempts, and 12 results.
  */
 public class FreshDatabaseSeeder {
