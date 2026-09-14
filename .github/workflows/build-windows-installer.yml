@@ -78,6 +78,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $portableDir | Out-Null
           Copy-Item "dist\exam-management-system.jar" "$portableDir\"
           Copy-Item "packaging\windows\portable\Start-ExamManagementSystem.bat" "$portableDir\"
+          Copy-Item "packaging\windows\portable\Start-ExamManagementSystem-Debug.bat" "$portableDir\"
           Copy-Item -Recurse "dist\lib" "$portableDir\"
           Copy-Item -Recurse "dist\conf" "$portableDir\"
           Copy-Item -Recurse "target\runtime" "$portableDir\"

@@ -40,37 +40,9 @@ for jar in Resource/*.jar; do
     fi
 done
 
-# Write RFC-compliant MANIFEST.MF with 72-byte max line wrapping
-python3 -c "
-import os
-
-jars = [os.path.basename(p) for p in sorted(os.listdir('Resource')) if p.endswith('.jar')]
-cp_str = ' '.join('lib/' + j for j in jars)
-
-with open('target/MANIFEST.MF', 'w', encoding='utf-8') as f:
-    f.write('Manifest-Version: 1.0\r\n')
-    f.write('Main-Class: exam_management_syatem.app.Main\r\n')
-    f.write('Implementation-Title: Exam Management System\r\n')
-    f.write('Implementation-Version: 1.0.0\r\n')
-    
-    header = 'Class-Path: '
-    full_cp = header + cp_str
-    
-    lines = []
-    while len(full_cp.encode('utf-8')) > 71:
-        chunk = full_cp[:70]
-        last_sp = chunk.rfind(' ')
-        if last_sp > 15:
-            lines.append(full_cp[:last_sp])
-            full_cp = ' ' + full_cp[last_sp+1:]
-        else:
-            lines.append(full_cp[:70])
-            full_cp = ' ' + full_cp[70:]
-    lines.append(full_cp)
-    
-    for line in lines:
-        f.write(line + '\r\n')
-"
+# Write RFC-compliant MANIFEST.MF using standard Java Manifest API
+javac -d target packaging/common/tools/GenerateManifest.java
+java -cp target exam_management_syatem.packaging.GenerateManifest dist/lib target/MANIFEST.MF 2.0.3
 
 # 6. Package final application JAR
 echo "[5/5] Creating dist/exam-management-system.jar..."

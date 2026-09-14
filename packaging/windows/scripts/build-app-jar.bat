@@ -45,19 +45,16 @@ for %%F in (Resource\*.jar) do (
     copy /Y "%%F" "dist\lib\" >nul
 )
 
-powershell -NoProfile -Command ^
-    "$jars = (Get-ChildItem -Path 'dist\lib\*.jar' | Sort-Object Name | ForEach-Object { 'lib/' + $_.Name }) -join ' '; " ^
-    "$lines = @('Manifest-Version: 1.0', 'Main-Class: exam_management_syatem.app.Main'); " ^
-    "$cur = 'Class-Path: '; " ^
-    "foreach ($part in $jars.Split(' ')) { " ^
-    "    if (($cur + ' ' + $part).Length -gt 70) { $lines += $cur; $cur = ' ' + $part; } " ^
-    "    else { $cur = if ($cur -eq 'Class-Path: ') { $cur + $part } else { $cur + ' ' + $part }; } " ^
-    "}; " ^
-    "$lines += $cur; " ^
-    "$lines += 'Created-By: Exam Management System Build System'; " ^
-    "$lines += 'Implementation-Title: Exam Management System'; " ^
-    "$lines += 'Implementation-Version: 2.0.0'; " ^
-    "[System.IO.File]::WriteAllLines('target\MANIFEST.MF', $lines);"
+javac -d target packaging\common\tools\GenerateManifest.java
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Failed to compile GenerateManifest.java.
+    exit /b %ERRORLEVEL%
+)
+java -cp target exam_management_syatem.packaging.GenerateManifest dist/lib target/MANIFEST.MF 2.0.3
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Failed to generate target\MANIFEST.MF.
+    exit /b %ERRORLEVEL%
+)
 
 rem 6. Package JAR
 echo [5/5] Creating dist\exam-management-system.jar...
