@@ -34,6 +34,9 @@ public class DatabaseManager {
     }
 
     private static synchronized void ensureDatabaseExists() {
+        if (!"localhost".equalsIgnoreCase(AppConfig.getDbHost()) && !"127.0.0.1".equals(AppConfig.getDbHost())) {
+            return;
+        }
         try (Connection adminConn = DriverManager.getConnection(AppConfig.getAdminDbUrl(), AppConfig.getDbUser(), AppConfig.getDbPassword());
              Statement stmt = adminConn.createStatement()) {
             stmt.executeUpdate("CREATE DATABASE " + AppConfig.getDbName());

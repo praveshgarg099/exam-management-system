@@ -19,6 +19,8 @@ public class AppConfig {
     private static String dbName = "exam_management";
     private static String dbUser = "postgres";
     private static String dbPassword = "";
+    private static String dbSslMode = null;
+    private static String customDbUrl = null;
 
     static {
         loadConfiguration();
@@ -34,6 +36,8 @@ public class AppConfig {
         dbName = "exam_management";
         dbUser = isWindows ? "postgres" : System.getProperty("user.name", "postgres");
         dbPassword = "";
+        dbSslMode = null;
+        customDbUrl = null;
 
         // 2. Try loading from external properties file
         Properties props = new Properties();
@@ -41,6 +45,9 @@ public class AppConfig {
         if (propFile != null && propFile.exists() && propFile.canRead()) {
             try (InputStream in = new FileInputStream(propFile)) {
                 props.load(in);
+                if (props.getProperty("db.url") != null && !props.getProperty("db.url").trim().isEmpty()) {
+                    customDbUrl = props.getProperty("db.url").trim();
+                }
                 if (props.getProperty("db.host") != null && !props.getProperty("db.host").trim().isEmpty()) {
                     dbHost = props.getProperty("db.host").trim();
                 }
@@ -56,12 +63,21 @@ public class AppConfig {
                 if (props.getProperty("db.password") != null) {
                     dbPassword = props.getProperty("db.password");
                 }
+                if (props.getProperty("db.sslmode") != null && !props.getProperty("db.sslmode").trim().isEmpty()) {
+                    dbSslMode = props.getProperty("db.sslmode").trim();
+                }
             } catch (Exception e) {
                 System.err.println("[AppConfig] Warning: Could not read configuration file: " + propFile.getAbsolutePath());
             }
         }
 
         // 3. Override with Environment Variables if set
+        if (System.getenv("DATABASE_URL") != null && !System.getenv("DATABASE_URL").trim().isEmpty()) {
+            customDbUrl = System.getenv("DATABASE_URL").trim();
+        }
+        if (System.getenv("DB_URL") != null && !System.getenv("DB_URL").trim().isEmpty()) {
+            customDbUrl = System.getenv("DB_URL").trim();
+        }
         if (System.getenv("DB_HOST") != null && !System.getenv("DB_HOST").trim().isEmpty()) {
             dbHost = System.getenv("DB_HOST").trim();
         }
@@ -76,6 +92,9 @@ public class AppConfig {
         }
         if (System.getenv("DB_PASSWORD") != null) {
             dbPassword = System.getenv("DB_PASSWORD");
+        }
+        if (System.getenv("DB_SSLMODE") != null && !System.getenv("DB_SSLMODE").trim().isEmpty()) {
+            dbSslMode = System.getenv("DB_SSLMODE").trim();
         }
     }
 
@@ -161,10 +180,27 @@ public class AppConfig {
     }
 
     public static String getDbUrl() {
-        return "jdbc:postgresql://" + dbHost + ":" + dbPort + "/" + dbName;
+        if (customDbUrl != null && !customDbUrl.trim().isEmpty()) {
+            return customDbUrl.trim();
+        }
+        StringBuilder url = new StringBuilder("jdbc:postgresql://")
+                .append(dbHost).append(":").append(dbPort).append("/").append(dbName);
+        if (dbSslMode != null && !dbSslMode.trim().isEmpty()) {
+            url.append("?sslmode=").append(dbSslMode.trim());
+        } else if (!"localhost".equalsIgnoreCase(dbHost) && !"127.0.0.1".equals(dbHost)) {
+            url.append("?sslmode=require");
+        }
+        return url.toString();
     }
 
     public static String getAdminDbUrl() {
-        return "jdbc:postgresql://" + dbHost + ":" + dbPort + "/postgres";
+        StringBuilder url = new StringBuilder("jdbc:postgresql://")
+                .append(dbHost).append(":").append(dbPort).append("/postgres");
+        if (dbSslMode != null && !dbSslMode.trim().isEmpty()) {
+            url.append("?sslmode=").append(dbSslMode.trim());
+        } else if (!"localhost".equalsIgnoreCase(dbHost) && !"127.0.0.1".equals(dbHost)) {
+            url.append("?sslmode=require");
+        }
+        return url.toString();
     }
 }
