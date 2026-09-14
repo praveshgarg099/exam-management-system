@@ -42,7 +42,7 @@ done
 
 # Write RFC-compliant MANIFEST.MF using standard Java Manifest API
 javac -d target packaging/common/tools/GenerateManifest.java
-java -cp target exam_management_syatem.packaging.GenerateManifest dist/lib target/MANIFEST.MF 2.0.5
+java -cp target exam_management_syatem.packaging.GenerateManifest dist/lib target/MANIFEST.MF 2.0.6
 
 # 6. Package final application JAR
 echo "[5/5] Creating dist/exam-management-system.jar..."

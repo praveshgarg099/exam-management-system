@@ -182,11 +182,25 @@ public class AppConfig {
         }
         StringBuilder url = new StringBuilder("jdbc:postgresql://")
                 .append(dbHost).append(":").append(dbPort).append("/").append(dbName);
+        
+        char separator = '?';
         if (dbSslMode != null && !dbSslMode.trim().isEmpty()) {
-            url.append("?sslmode=").append(dbSslMode.trim());
+            url.append(separator).append("sslmode=").append(dbSslMode.trim());
+            separator = '&';
         } else if (!"localhost".equalsIgnoreCase(dbHost) && !"127.0.0.1".equals(dbHost)) {
-            url.append("?sslmode=require");
+            url.append(separator).append("sslmode=require");
+            separator = '&';
         }
+        
+        // High-performance JDBC options for cloud databases over WAN
+        url.append(separator).append("tcpKeepAlive=true")
+           .append("&connectTimeout=10")
+           .append("&socketTimeout=30")
+           .append("&preparedStatementCacheQueries=256")
+           .append("&preparedStatementCacheSizeMiB=10")
+           .append("&prepareThreshold=5")
+           .append("&ApplicationName=ExamManagementSystem");
+
         return url.toString();
     }
 

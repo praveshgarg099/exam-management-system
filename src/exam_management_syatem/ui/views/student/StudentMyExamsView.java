@@ -33,9 +33,11 @@ import java.awt.FlowLayout;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class StudentMyExamsView extends JPanel {
@@ -256,15 +258,26 @@ public class StudentMyExamsView extends JPanel {
         activeWorker = new SwingWorker<>() {
             @Override
             protected ExamsData doInBackground() throws Exception {
-                // Exactly 3 queries: subjects, schedules, attempts
-                List<Subject> subjects = subjectService.getActiveSubjects(session);
+                CompletableFuture<List<Subject>> subjectsFut = CompletableFuture.supplyAsync(() -> {
+                    try { return subjectService.getActiveSubjects(session); } catch (Exception e) { return Collections.emptyList(); }
+                });
+                CompletableFuture<List<ExamSchedule>> schedulesFut = CompletableFuture.supplyAsync(() -> {
+                    try { return examService.getSchedulesByStudentId(session, session.getStudentId()); } catch (Exception e) { return Collections.emptyList(); }
+                });
+                CompletableFuture<List<ExamAttempt>> attemptsFut = CompletableFuture.supplyAsync(() -> {
+                    try { return examService.getAttemptsByStudent(session, session.getStudentId()); } catch (Exception e) { return Collections.emptyList(); }
+                });
+
+                CompletableFuture.allOf(subjectsFut, schedulesFut, attemptsFut).join();
+
+                List<Subject> subjects = subjectsFut.join();
+                List<ExamSchedule> schedules = schedulesFut.join();
+                List<ExamAttempt> attempts = attemptsFut.join();
+
                 Map<Integer, String> sMap = new HashMap<>();
                 for (Subject s : subjects) {
                     sMap.put(s.getId(), s.getName());
                 }
-
-                List<ExamSchedule> schedules = examService.getSchedulesByStudentId(session, session.getStudentId());
-                List<ExamAttempt> attempts = examService.getAttemptsByStudent(session, session.getStudentId());
 
                 Map<Integer, ExamAttempt> attemptBySchedule = new HashMap<>();
                 for (ExamAttempt a : attempts) {

@@ -224,15 +224,7 @@ public class AdminSubjectsView extends JPanel {
             @Override
             protected SubjectData doInBackground() throws Exception {
                 List<Subject> all = subjectService.getAllSubjects(session);
-                Map<Integer, Integer> counts = new HashMap<>();
-                for (Subject s : all) {
-                    try {
-                        int c = questionService.getQuestionsBySubjectId(session, s.getId()).size();
-                        counts.put(s.getId(), c);
-                    } catch (Exception ex) {
-                        counts.put(s.getId(), 0);
-                    }
-                }
+                Map<Integer, Integer> counts = questionService.getQuestionCountsBySubject(session);
                 return new SubjectData(all, counts);
             }
 

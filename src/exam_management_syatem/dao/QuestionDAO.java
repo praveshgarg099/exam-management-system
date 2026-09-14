@@ -9,7 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class QuestionDAO {
 
@@ -90,6 +92,32 @@ public class QuestionDAO {
             }
         }
         return list;
+    }
+
+    public List<Question> listAll() throws SQLException {
+        List<Question> list = new ArrayList<>();
+        String sql = "SELECT id, subject_id, question_text, option1, option2, option3, option4, correct_answer, difficulty, active, created_at, updated_at FROM questions ORDER BY subject_id ASC, id ASC";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        }
+        return list;
+    }
+
+    public Map<Integer, Integer> getQuestionCountsBySubject() throws SQLException {
+        Map<Integer, Integer> counts = new HashMap<>();
+        String sql = "SELECT subject_id, COUNT(*) FROM questions GROUP BY subject_id";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                counts.put(rs.getInt(1), rs.getInt(2));
+            }
+        }
+        return counts;
     }
 
     public List<Question> search(int subjectId, String keyword) throws SQLException {

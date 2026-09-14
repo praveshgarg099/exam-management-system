@@ -37,24 +37,7 @@ public class Main {
             } catch (Exception ignored) {}
         });
 
-        // 3. Initialize PostgreSQL database schema & ensure admin user exists
-        try {
-            DatabaseManager.initializeDatabase();
-        } catch (Throwable t) {
-            System.err.println("PostgreSQL database initialization warning: " + t.getMessage());
-            t.printStackTrace();
-            SwingUtilities.invokeLater(() -> {
-                JOptionPane.showMessageDialog(null,
-                        "Could not connect to PostgreSQL database.\n\n" +
-                        "Details: " + (t.getMessage() != null ? t.getMessage() : t.toString()) + "\n\n" +
-                        "Please ensure PostgreSQL service is running on port 5432\n" +
-                        "or configure database settings in 'conf/database.properties'.",
-                        "Database Notice",
-                        JOptionPane.WARNING_MESSAGE);
-            });
-        }
-
-        // 4. Always launch the User Interface so the window appears reliably
+        // 3. Always launch the User Interface immediately on the EDT so the window appears without delay
         SwingUtilities.invokeLater(() -> {
             try {
                 LoginFrame.launch();
@@ -65,6 +48,26 @@ public class Main {
                         "Failed to display application window: " + t.getMessage(),
                         "Launch Error",
                         JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // 4. Asynchronously initialize database schema and warm up connection pool in background
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                DatabaseManager.initializeDatabase();
+                DatabaseManager.warmUpPool(2);
+            } catch (Throwable t) {
+                System.err.println("PostgreSQL database initialization warning: " + t.getMessage());
+                t.printStackTrace();
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(null,
+                            "Could not connect to PostgreSQL database.\n\n" +
+                            "Details: " + (t.getMessage() != null ? t.getMessage() : t.toString()) + "\n\n" +
+                            "Please ensure internet connection is active or configure\n" +
+                            "database settings in 'conf/database.properties'.",
+                            "Database Notice",
+                            JOptionPane.WARNING_MESSAGE);
+                });
             }
         });
     }

@@ -247,12 +247,7 @@ public class AdminQuestionsView extends JPanel {
             @Override
             protected QuestionData doInBackground() throws Exception {
                 List<Subject> subjects = subjectService.getAllSubjects(session);
-                List<Question> questions = new ArrayList<>();
-                for (Subject s : subjects) {
-                    try {
-                        questions.addAll(questionService.getQuestionsBySubjectId(session, s.getId()));
-                    } catch (Exception ignored) {}
-                }
+                List<Question> questions = questionService.getAllQuestions(session);
                 return new QuestionData(subjects, questions);
             }
 

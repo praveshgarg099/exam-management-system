@@ -52,6 +52,48 @@ public class DashboardMetricsService {
 
         Metrics m = new Metrics();
 
+        String sql = "SELECT "
+                + "(SELECT COUNT(*) FROM students) AS total_students, "
+                + "(SELECT COUNT(*) FROM students WHERE active = true) AS active_students, "
+                + "(SELECT COUNT(*) FROM subjects) AS total_subjects, "
+                + "(SELECT COUNT(*) FROM subjects WHERE active = true) AS active_subjects, "
+                + "(SELECT COUNT(*) FROM questions) AS total_questions, "
+                + "(SELECT COUNT(*) FROM questions WHERE active = true) AS active_questions, "
+                + "(SELECT COUNT(*) FROM exam_schedules) AS total_schedules, "
+                + "(SELECT COUNT(*) FROM exam_results) AS total_results, "
+                + "(SELECT COUNT(*) FROM exam_results WHERE LOWER(result) = 'pass') AS passed_count, "
+                + "(SELECT COUNT(*) FROM exam_results WHERE LOWER(result) = 'fail') AS failed_count, "
+                + "COALESCE((SELECT AVG(percentage) FROM exam_results), 0.0) AS avg_percentage";
+
+        try (java.sql.Connection conn = exam_management_syatem.db.DatabaseManager.getConnection();
+             java.sql.Statement stmt = conn.createStatement();
+             java.sql.ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                m.totalStudents = rs.getInt("total_students");
+                m.activeStudents = rs.getInt("active_students");
+                m.totalSubjects = rs.getInt("total_subjects");
+                m.activeSubjects = rs.getInt("active_subjects");
+                m.totalQuestions = rs.getInt("total_questions");
+                m.activeQuestions = rs.getInt("active_questions");
+                m.totalSchedules = rs.getInt("total_schedules");
+                m.totalResults = rs.getInt("total_results");
+                m.passedCount = rs.getInt("passed_count");
+                m.failedCount = rs.getInt("failed_count");
+
+                if (m.totalResults > 0) {
+                    m.passRate = Math.round((m.passedCount * 100.0 / m.totalResults) * 100.0) / 100.0;
+                    m.averageScorePercentage = Math.round(rs.getDouble("avg_percentage") * 100.0) / 100.0;
+                } else {
+                    m.passRate = 0.0;
+                    m.averageScorePercentage = 0.0;
+                }
+                return m;
+            }
+        } catch (Exception ex) {
+            System.err.println("[DashboardMetricsService] Note: Fast aggregation fallback: " + ex.getMessage());
+        }
+
+        // Fallback to individual DAOs if aggregation query fails
         List<Student> students = studentDAO.listAll();
         m.totalStudents = students.size();
         m.activeStudents = (int) students.stream().filter(Student::isActive).count();

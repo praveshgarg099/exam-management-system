@@ -8,6 +8,7 @@ import exam_management_syatem.security.UserSession;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 public class QuestionService {
     private final QuestionDAO questionDAO;
@@ -108,6 +109,22 @@ public class QuestionService {
         }
         session.requireAdmin();
         return questionDAO.findBySubjectId(subjectId);
+    }
+
+    public List<Question> getAllQuestions(UserSession session) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+        return questionDAO.listAll();
+    }
+
+    public Map<Integer, Integer> getQuestionCountsBySubject(UserSession session) throws Exception {
+        if (session == null) {
+            throw new SecurityException("Access Denied: Unauthenticated session.");
+        }
+        session.requireAdmin();
+        return questionDAO.getQuestionCountsBySubject();
     }
 
     public List<Question> getActiveQuestionsBySubjectId(UserSession session, int subjectId) throws Exception {

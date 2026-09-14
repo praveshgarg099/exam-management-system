@@ -19,6 +19,19 @@ public class SubjectService {
         this.subjectDAO = subjectDAO;
     }
 
+    private static volatile List<Subject> cachedActive = null;
+    private static volatile long lastActiveCacheTime = 0;
+    private static volatile List<Subject> cachedAll = null;
+    private static volatile long lastAllCacheTime = 0;
+    private static final long CACHE_TTL_MS = 60_000;
+
+    public static synchronized void invalidateCache() {
+        cachedActive = null;
+        lastActiveCacheTime = 0;
+        cachedAll = null;
+        lastAllCacheTime = 0;
+    }
+
     public Subject addSubject(UserSession session, String name) throws Exception {
         if (session == null) {
             throw new SecurityException("Access Denied: Unauthenticated session.");
@@ -39,6 +52,7 @@ public class SubjectService {
         subject.setActive(true);
         int id = subjectDAO.insert(subject);
         subject.setId(id);
+        invalidateCache();
         return subject;
     }
 
@@ -63,7 +77,16 @@ public class SubjectService {
             throw new SecurityException("Access Denied: Unauthenticated session.");
         }
         session.requireAuthenticated();
-        return subjectDAO.listActive();
+        
+        long now = System.currentTimeMillis();
+        if (cachedActive != null && (now - lastActiveCacheTime) < CACHE_TTL_MS) {
+            return cachedActive;
+        }
+
+        List<Subject> list = subjectDAO.listActive();
+        cachedActive = list;
+        lastActiveCacheTime = now;
+        return list;
     }
 
     public List<Subject> getAllSubjects(UserSession session) throws Exception {
@@ -71,7 +94,16 @@ public class SubjectService {
             throw new SecurityException("Access Denied: Unauthenticated session.");
         }
         session.requireAdmin();
-        return subjectDAO.listAll();
+
+        long now = System.currentTimeMillis();
+        if (cachedAll != null && (now - lastAllCacheTime) < CACHE_TTL_MS) {
+            return cachedAll;
+        }
+
+        List<Subject> list = subjectDAO.listAll();
+        cachedAll = list;
+        lastAllCacheTime = now;
+        return list;
     }
 
     public void updateSubject(UserSession session, int id, String newName) throws Exception {
@@ -94,6 +126,7 @@ public class SubjectService {
         }
         subject.setName(cleanName);
         subjectDAO.update(subject);
+        invalidateCache();
     }
 
     public void setSubjectActive(UserSession session, int id, boolean active) throws Exception {
@@ -109,5 +142,6 @@ public class SubjectService {
             }
         }
         subjectDAO.setActive(id, active);
+        invalidateCache();
     }
 }

@@ -33,11 +33,13 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class StudentMyResultsView extends JPanel {
@@ -207,13 +209,21 @@ public class StudentMyResultsView extends JPanel {
         activeWorker = new SwingWorker<>() {
             @Override
             protected ResultsData doInBackground() throws Exception {
-                // Batch queries:
-                // 1. ResultService.getResultsByStudent (joins subjects in SQL)
-                // 2. ExamService.getAttemptsByStudent (to detect expired attempts without result rows)
-                // 3. SubjectService.getActiveSubjects (to resolve subject name for expired attempts)
-                List<ExamResult> results = resultService.getResultsByStudent(session, session.getStudentId());
-                List<ExamAttempt> attempts = examService.getAttemptsByStudent(session, session.getStudentId());
-                List<Subject> subjects = subjectService.getActiveSubjects(session);
+                CompletableFuture<List<ExamResult>> resultsFut = CompletableFuture.supplyAsync(() -> {
+                    try { return resultService.getResultsByStudent(session, session.getStudentId()); } catch (Exception e) { return Collections.emptyList(); }
+                });
+                CompletableFuture<List<ExamAttempt>> attemptsFut = CompletableFuture.supplyAsync(() -> {
+                    try { return examService.getAttemptsByStudent(session, session.getStudentId()); } catch (Exception e) { return Collections.emptyList(); }
+                });
+                CompletableFuture<List<Subject>> subjectsFut = CompletableFuture.supplyAsync(() -> {
+                    try { return subjectService.getActiveSubjects(session); } catch (Exception e) { return Collections.emptyList(); }
+                });
+
+                CompletableFuture.allOf(resultsFut, attemptsFut, subjectsFut).join();
+
+                List<ExamResult> results = resultsFut.join();
+                List<ExamAttempt> attempts = attemptsFut.join();
+                List<Subject> subjects = subjectsFut.join();
 
                 Map<Integer, String> sMap = new HashMap<>();
                 for (Subject s : subjects) {

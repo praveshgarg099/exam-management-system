@@ -43,9 +43,11 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class StudentDashboardView extends JPanel {
@@ -131,7 +133,6 @@ public class StudentDashboardView extends JPanel {
         this.subjectService = new SubjectService();
 
         initComponent();
-        refreshData();
     }
 
     private void initComponent() {
@@ -377,12 +378,30 @@ public class StudentDashboardView extends JPanel {
         activeWorker = new SwingWorker<>() {
             @Override
             protected DashboardData doInBackground() throws Exception {
-                // Exactly 5 batch queries
-                Student student = studentService.getStudentById(session, session.getStudentId());
-                List<Subject> subjects = subjectService.getActiveSubjects(session);
-                List<ExamSchedule> schedules = examService.getSchedulesByStudentId(session, session.getStudentId());
-                List<ExamAttempt> attempts = examService.getAttemptsByStudent(session, session.getStudentId());
-                List<ExamResult> results = resultService.getResultsByStudent(session, session.getStudentId());
+                // Fetch student, subjects, schedules, attempts, and results concurrently
+                CompletableFuture<Student> studentFut = CompletableFuture.supplyAsync(() -> {
+                    try { return studentService.getStudentById(session, session.getStudentId()); } catch (Exception e) { return null; }
+                });
+                CompletableFuture<List<Subject>> subjectsFut = CompletableFuture.supplyAsync(() -> {
+                    try { return subjectService.getActiveSubjects(session); } catch (Exception e) { return Collections.emptyList(); }
+                });
+                CompletableFuture<List<ExamSchedule>> schedulesFut = CompletableFuture.supplyAsync(() -> {
+                    try { return examService.getSchedulesByStudentId(session, session.getStudentId()); } catch (Exception e) { return Collections.emptyList(); }
+                });
+                CompletableFuture<List<ExamAttempt>> attemptsFut = CompletableFuture.supplyAsync(() -> {
+                    try { return examService.getAttemptsByStudent(session, session.getStudentId()); } catch (Exception e) { return Collections.emptyList(); }
+                });
+                CompletableFuture<List<ExamResult>> resultsFut = CompletableFuture.supplyAsync(() -> {
+                    try { return resultService.getResultsByStudent(session, session.getStudentId()); } catch (Exception e) { return Collections.emptyList(); }
+                });
+
+                CompletableFuture.allOf(studentFut, subjectsFut, schedulesFut, attemptsFut, resultsFut).join();
+
+                Student student = studentFut.join();
+                List<Subject> subjects = subjectsFut.join();
+                List<ExamSchedule> schedules = schedulesFut.join();
+                List<ExamAttempt> attempts = attemptsFut.join();
+                List<ExamResult> results = resultsFut.join();
 
                 // Build O(1) in-memory lookup map for subjects
                 Map<Integer, String> sMap = new HashMap<>();

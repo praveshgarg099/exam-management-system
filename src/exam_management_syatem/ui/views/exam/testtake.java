@@ -459,9 +459,14 @@ public class testtake extends JFrame {
 				lblNewLabel_6.setText(ddMinute + ":" + ddSecond);
 
 				if (activeAttempt != null && (second % 5 == 0) && currentSession != null) {
-					try {
-						new ExamService().updateRemainingTime(currentSession, activeAttempt.getId(), (minute * 60) + second);
-					} catch (Exception ignored) {}
+					final int remSec = (minute * 60) + second;
+					final int attId = activeAttempt.getId();
+					final UserSession sess = currentSession;
+					java.util.concurrent.CompletableFuture.runAsync(() -> {
+						try {
+							new ExamService().updateRemainingTime(sess, attId, remSec);
+						} catch (Exception ignored) {}
+					});
 				}
 			}
 		});
@@ -483,9 +488,15 @@ public class testtake extends JFrame {
 		}
 		if (activeAttempt != null && sessionQuestions != null && question1 > 0 && question1 <= sessionQuestions.size() && currentSession != null) {
 			Question q = sessionQuestions.get(question1 - 1);
-			try {
-				new ExamService().saveAnswer(currentSession, activeAttempt.getId(), q.getId(), selected);
-			} catch (Exception ignored) {}
+			final int attId = activeAttempt.getId();
+			final int qId = q.getId();
+			final String sel = selected;
+			final UserSession sess = currentSession;
+			java.util.concurrent.CompletableFuture.runAsync(() -> {
+				try {
+					new ExamService().saveAnswer(sess, attId, qId, sel);
+				} catch (Exception ignored) {}
+			});
 		}
 		updateProgressIndicator();
 	}
