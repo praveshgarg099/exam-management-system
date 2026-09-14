@@ -20,7 +20,7 @@ public class GenerateManifest {
         try {
             String libDirPath = args.length > 0 ? args[0] : "dist/lib";
             String outputPath = args.length > 1 ? args[1] : "target/MANIFEST.MF";
-            String version = args.length > 2 ? args[2] : "2.0.3";
+            String version = args.length > 2 ? args[2] : "2.0.4";
 
             File libDir = new File(libDirPath);
             File[] jars = libDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".jar"));

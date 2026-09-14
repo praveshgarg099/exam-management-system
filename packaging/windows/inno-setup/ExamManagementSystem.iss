@@ -4,7 +4,7 @@
 ; ==============================================================================
 
 #define MyAppName "Exam Management System"
-#define MyAppVersion "2.0.3"
+#define MyAppVersion "2.0.4"
 #define MyAppPublisher "Exam Management System Team"
 #define MyAppURL "https://github.com/praveshgarg099/exam-management-system"
 #define MyAppBatName "ExamManagementSystem.bat"
@@ -32,13 +32,13 @@ PrivilegesRequired=lowest
 UninstallDisplayIcon={app}\{#MyAppBatName}
 SetupLogging=yes
 
-VersionInfoVersion=2.0.3.0
+VersionInfoVersion=2.0.4.0
 VersionInfoCompany=Exam Management System Team
 VersionInfoDescription=Exam Management System Desktop Application
-VersionInfoTextVersion=2.0.3
+VersionInfoTextVersion=2.0.4
 VersionInfoCopyright=Copyright (C) 2026 Exam Management System Team
 VersionInfoProductName=Exam Management System
-VersionInfoProductVersion=2.0.3.0
+VersionInfoProductVersion=2.0.4.0
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

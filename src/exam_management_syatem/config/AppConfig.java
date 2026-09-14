@@ -14,12 +14,12 @@ import java.util.Properties;
  */
 public class AppConfig {
 
-    private static String dbHost = "localhost";
+    private static String dbHost = "ep-green-thunder-aef6xsl1.c-2.us-east-2.aws.neon.tech";
     private static String dbPort = "5432";
-    private static String dbName = "exam_management";
-    private static String dbUser = "postgres";
-    private static String dbPassword = "";
-    private static String dbSslMode = null;
+    private static String dbName = "neondb";
+    private static String dbUser = "neondb_owner";
+    private static String dbPassword = "npg_ORxPF21WDIKb";
+    private static String dbSslMode = "require";
     private static String customDbUrl = null;
 
     static {
@@ -27,16 +27,13 @@ public class AppConfig {
     }
 
     public static synchronized void loadConfiguration() {
-        // 1. Start with hardened platform defaults:
-        // On Windows, standard PostgreSQL superuser is "postgres".
-        // On macOS/Unix, Homebrew and local PostgreSQL default to the login user.
-        boolean isWindows = System.getProperty("os.name", "").toLowerCase().contains("win");
-        dbHost = "localhost";
+        // 1. Built-in cloud database defaults (Zero installation / zero configuration)
+        dbHost = "ep-green-thunder-aef6xsl1.c-2.us-east-2.aws.neon.tech";
         dbPort = "5432";
-        dbName = "exam_management";
-        dbUser = isWindows ? "postgres" : System.getProperty("user.name", "postgres");
-        dbPassword = "";
-        dbSslMode = null;
+        dbName = "neondb";
+        dbUser = "neondb_owner";
+        dbPassword = "npg_ORxPF21WDIKb";
+        dbSslMode = "require";
         customDbUrl = null;
 
         // 2. Try loading from external properties file

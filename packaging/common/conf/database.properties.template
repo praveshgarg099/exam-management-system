@@ -1,33 +1,22 @@
 # ==============================================================================
-# Exam Management System - Database Configuration
+# Exam Management System - Built-in Database Configuration
 # ==============================================================================
-# File Location:
-#   Application folder: conf/database.properties
-#   Or Windows: %APPDATA%\ExamManagementSystem\database.properties
+# Pre-configured with live cloud PostgreSQL (Neon.tech)
+# No local database installation or setup required!
 # ==============================================================================
 
-# ------------------------------------------------------------------------------
-# OPTION 1: Free Cloud Database (Neon.tech / Supabase) - Recommended
-# ------------------------------------------------------------------------------
-# To connect to Neon:
-# 1. Sign up at https://neon.tech and create a free project.
-# 2. Under "Connection Details", select "Parameters" and copy the values:
-#
-# db.host=ep-cool-fog-123456.us-east-2.aws.neon.tech
-# db.port=5432
-# db.name=neondb
-# db.user=neondb_owner
-# db.password=your_neon_password
-# db.sslmode=require
-#
-# Alternatively, paste full JDBC URL:
-# db.url=jdbc:postgresql://ep-cool-fog-123456.us-east-2.aws.neon.tech:5432/neondb?sslmode=require
-
-# ------------------------------------------------------------------------------
-# OPTION 2: Local PostgreSQL on your PC (Default)
-# ------------------------------------------------------------------------------
-db.host=localhost
+db.host=ep-green-thunder-aef6xsl1.c-2.us-east-2.aws.neon.tech
 db.port=5432
-db.name=exam_management
-db.user=postgres
-db.password=
+db.name=neondb
+db.user=neondb_owner
+db.password=npg_ORxPF21WDIKb
+db.sslmode=require
+
+# ------------------------------------------------------------------------------
+# Optional: To use your own local PostgreSQL server instead, uncomment below:
+# ------------------------------------------------------------------------------
+# db.host=localhost
+# db.port=5432
+# db.name=exam_management
+# db.user=postgres
+# db.password=your_password
