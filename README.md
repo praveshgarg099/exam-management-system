@@ -231,6 +231,16 @@ javac -cp "Resource/*:src" -d bin @sources.txt
 
 ### 2. Run the Application
 Launch the graphical interface:
+
+**On macOS (One-Click Launcher or Terminal):**
+Double-click `run-macos.command` in Finder, or run:
+```bash
+./run-macos.command
+# Or via packaged JAR directly:
+java -jar dist/exam-management-system.jar
+```
+
+**From compiled classes:**
 ```bash
 java -cp "bin:Resource/*" exam_management_syatem.app.Main
 ```
