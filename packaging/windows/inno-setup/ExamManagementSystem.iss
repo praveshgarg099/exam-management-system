@@ -4,7 +4,7 @@
 ; ==============================================================================
 
 #define MyAppName "Exam Management System"
-#define MyAppVersion "2.0.1"
+#define MyAppVersion "2.0.2"
 #define MyAppPublisher "Exam Management System Team"
 #define MyAppURL "https://github.com/praveshgarg099/exam-management-system"
 #define MyAppBatName "ExamManagementSystem.bat"
@@ -32,6 +32,14 @@ PrivilegesRequired=lowest
 UninstallDisplayIcon={app}\{#MyAppBatName}
 SetupLogging=yes
 
+VersionInfoVersion=2.0.2.0
+VersionInfoCompany=Exam Management System Team
+VersionInfoDescription=Exam Management System Desktop Application
+VersionInfoTextVersion=2.0.2
+VersionInfoCopyright=Copyright (C) 2026 Exam Management System Team
+VersionInfoProductName=Exam Management System
+VersionInfoProductVersion=2.0.2.0
+
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
@@ -44,7 +52,6 @@ Source: "..\..\..\dist\exam-management-system.jar"; DestDir: "{app}"; Flags: ign
 Source: "..\..\..\dist\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\..\dist\conf\*"; DestDir: "{app}\conf"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\launcher\ExamManagementSystem.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\launcher\ExamManagementSystem.vbs"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\scripts\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; Custom modular Java Runtime Environment (~50MB jlink image)

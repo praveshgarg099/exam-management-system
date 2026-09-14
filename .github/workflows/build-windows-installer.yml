@@ -71,11 +71,35 @@ jobs:
             throw "ERROR: dist\installer\ExamManagementSystem-Setup.exe not found!"
           }
 
+      - name: Build Portable Windows ZIP Distribution
+        shell: powershell
+        run: |
+          $portableDir = "target\portable\ExamManagementSystem"
+          New-Item -ItemType Directory -Force -Path $portableDir | Out-Null
+          Copy-Item "dist\exam-management-system.jar" "$portableDir\"
+          Copy-Item "packaging\windows\portable\Start-ExamManagementSystem.bat" "$portableDir\"
+          Copy-Item -Recurse "dist\lib" "$portableDir\"
+          Copy-Item -Recurse "dist\conf" "$portableDir\"
+          Copy-Item -Recurse "target\runtime" "$portableDir\"
+
+          $zipPath = "dist\installer\ExamManagementSystem-Portable-Windows.zip"
+          Compress-Archive -Path "$portableDir" -DestinationPath "$zipPath" -Force
+          $zipItem = Get-Item $zipPath
+          Write-Host "Portable ZIP generated: $($zipItem.FullName) ($([Math]::Round($zipItem.Length / 1MB, 2)) MB)" -ForegroundColor Green
+
       - name: Upload Installer as Workflow Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ExamManagementSystem-Setup
           path: dist/installer/ExamManagementSystem-Setup.exe
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload Portable ZIP as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ExamManagementSystem-Portable-Windows
+          path: dist/installer/ExamManagementSystem-Portable-Windows.zip
           if-no-files-found: error
           retention-days: 90
 
@@ -94,6 +118,7 @@ jobs:
           name: "Exam Management System ${{ github.ref_name }}"
           tag_name: ${{ github.ref_name }}
           files: |
+            dist/installer/ExamManagementSystem-Portable-Windows.zip
             dist/installer/ExamManagementSystem-Setup.exe
             dist/exam-management-system.jar
           draft: false
@@ -102,7 +127,8 @@ jobs:
             ## Exam Management System — Desktop Release
 
             ### Included Downloads:
-            - **`ExamManagementSystem-Setup.exe`**: Standalone Windows installer with bundled modular JRE runtime and zero-touch database bootstrap.
+            - **`ExamManagementSystem-Portable-Windows.zip`** (Recommended): 100% portable zero-installation package. Just extract and double-click `Start-ExamManagementSystem.bat`. Zero antivirus/SmartScreen false positives.
+            - **`ExamManagementSystem-Setup.exe`**: Full Windows setup installer with Desktop shortcuts.
             - **`exam-management-system.jar`**: Cross-platform application JAR for macOS and Linux.
 
             ### Default Credentials:
