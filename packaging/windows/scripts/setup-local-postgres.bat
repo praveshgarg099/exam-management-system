@@ -18,13 +18,7 @@ set "PORT=5432"
 
 echo [setup-postgres] Checking PostgreSQL status on port %PORT%...
 
-rem 1. Check if port 5432 is already actively listening
-powershell -NoProfile -Command "(Test-NetConnection -ComputerName 127.0.0.1 -Port %PORT% -WarningAction SilentlyContinue).TcpTestSucceeded" 2>nul | findstr /i "True" >nul
-if not errorlevel 1 (
-    echo [setup-postgres] PostgreSQL is already active and listening on port %PORT%.
-    exit /b 0
-)
-
+rem 1. Check if port 5432 is already actively listening via native netstat
 netstat -ano | findstr ":%PORT% " | findstr /i "LISTENING" >nul
 if not errorlevel 1 (
     echo [setup-postgres] PostgreSQL is already active and listening on port %PORT%.

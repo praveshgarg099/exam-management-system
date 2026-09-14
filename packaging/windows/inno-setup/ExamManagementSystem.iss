@@ -4,10 +4,9 @@
 ; ==============================================================================
 
 #define MyAppName "Exam Management System"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.1"
 #define MyAppPublisher "Exam Management System Team"
 #define MyAppURL "https://github.com/praveshgarg099/exam-management-system"
-#define MyAppExeName "ExamManagementSystem.vbs"
 #define MyAppBatName "ExamManagementSystem.bat"
 
 [Setup]
@@ -56,16 +55,16 @@ Source: "..\..\..\dist\pgsql\*"; DestDir: "{app}\pgsql"; Flags: ignoreversion re
 
 [Icons]
 ; Start Menu Shortcuts
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Comment: "Launch Exam Management System"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\runtime\bin\javaw.exe"; Parameters: "-Dapp.home=""{app}"" -Dfile.encoding=UTF-8 -jar ""{app}\exam-management-system.jar"""; WorkingDir: "{app}"; Comment: "Launch Exam Management System"
 Name: "{group}\{#MyAppName} (Debug Console)"; Filename: "{app}\{#MyAppBatName}"; Parameters: "--debug"; WorkingDir: "{app}"; Comment: "Launch Exam Management System with debug console"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 
 ; Desktop Shortcut
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon; Comment: "Launch Exam Management System"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\runtime\bin\javaw.exe"; Parameters: "-Dapp.home=""{app}"" -Dfile.encoding=UTF-8 -jar ""{app}\exam-management-system.jar"""; WorkingDir: "{app}"; Tasks: desktopicon; Comment: "Launch Exam Management System"
 
 [Run]
 ; Option to launch the application immediately upon installation completion
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall shellexec skipifsilent nowait
+Filename: "{app}\runtime\bin\javaw.exe"; Parameters: "-Dapp.home=""{app}"" -Dfile.encoding=UTF-8 -jar ""{app}\exam-management-system.jar"""; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
 ; Gracefully shut down any running portable PostgreSQL cluster before file removal
